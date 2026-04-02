@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jira Branch Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:       #0d0d14;
+      --s1:       #15151f;
+      --s2:       #1c1c2a;
+      --bd:       #28283e;
+      --bd2:      #35355a;
+      --acc:      #7c6af7;
+      --acc2:     #a78bfa;
+      --glow:     rgba(124,106,247,.2);
+      --green:    #4ade80;
+      --gbg:      rgba(74,222,128,.1);
+      --orange:   #fb923c;
+      --blue:     #38bdf8;
+      --yellow:   #fbbf24;
+      --pink:     #f472b6;
+      --teal:     #2dd4bf;
+      --lime:     #a3e635;
+      --red:      #f87171;
+      --tx:       #e2e2f0;
+      --txd:      #9898b8;
+      --txm:      #6b6b88;
+      --mono:     'JetBrains Mono', monospace;
+      --sans:     'DM Sans', sans-serif;
+      --r:        8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 430px; background: var(--bg); color: var(--tx); font-family: var(--sans); font-size: 13px; }
+
+    /* Header */
+    .hdr { padding: 11px 14px; background: var(--s1); border-bottom: 1px solid var(--bd); display: flex; align-items: center; gap: 10px; }
+    .logo { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg,#7c6af7,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 0 10px var(--glow); }
+    .hdr h1 { font-size: 13px; font-weight: 600; }
+    .hdr p  { font-size: 10px; color: var(--txm); }
+    .status { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--txm); }
+    .dot    { width: 6px; height: 6px; border-radius: 50%; background: var(--txm); flex-shrink: 0; }
+    .dot.on  { background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .dot.err { background: var(--red); }
+
+    /* Tabs */
+    .tabs { display: flex; background: var(--s1); border-bottom: 1px solid var(--bd); }
+    .tab  { flex: 1; padding: 8px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; color: var(--txm); border-bottom: 2px solid transparent; transition: all .15s; user-select: none; }
+    .tab.active { color: var(--acc2); border-bottom-color: var(--acc); }
+    .tab:hover:not(.active) { color: var(--txd); }
+
+    /* Pages */
+    .page { display: none; padding: 12px 14px; flex-direction: column; gap: 10px; }
+    .page.active { display: flex; }
+
+    /* Section label */
+    .slbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--txm); display: flex; align-items: center; gap: 6px; }
+    .slbl::after { content:''; flex:1; height:1px; background:var(--bd); }
+
+    /* ── Detected fields grid ── */
+    .fields-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+    .field-card  {
+      display: flex; flex-direction: column;
+      background: var(--s1); border: 1px solid var(--bd);
+      border-radius: var(--r); padding: 6px 8px; min-width: 0;
+      transition: border-color .12s;
+    }
+    .field-card:focus-within { border-color: var(--bd2); background: var(--s2); }
+    .field-card.empty { opacity: .45; }
+    .field-card .fc-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--txm); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+    .field-card .fc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .field-card input   { background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--tx); width: 100%; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* colour per field */
+    .fc-sprint input  { color: var(--orange); }
+    .fc-parent input  { color: var(--blue); }
+    .fc-ticket input  { color: var(--acc2); }
+    .fc-assignee input{ color: var(--pink); }
+    .fc-label input   { color: var(--teal); }
+    .fc-component input { color: var(--lime); }
+    .fc-type input    { color: var(--yellow); }
+    .fc-priority input{ color: var(--red); }
+
+    .fc-sprint .fc-dot  { background: var(--orange); }
+    .fc-parent .fc-dot  { background: var(--blue); }
+    .fc-ticket .fc-dot  { background: var(--acc2); }
+    .fc-assignee .fc-dot{ background: var(--pink); }
+    .fc-label .fc-dot   { background: var(--teal); }
+    .fc-component .fc-dot{ background: var(--lime); }
+    .fc-type .fc-dot    { background: var(--yellow); }
+    .fc-priority .fc-dot{ background: var(--red); }
+
+    /* full-width title card */
+    .fields-grid .field-card.wide { grid-column: 1 / -1; }
+    .fc-title input { color: var(--txd); font-size: 10.5px; }
+
+    /* ── Branch output ── */
+    .branch-wrap { display:none; flex-direction:column; gap:5px; }
+    .branch-wrap.show { display:flex; }
+    .branch-box  { background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:9px 11px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:border-color .15s,background .15s; }
+    .branch-box:hover  { border-color:var(--acc); background:var(--s2); }
+    .branch-box.copied { border-color:var(--green); background:var(--gbg); }
+    .branch-name { font-family:var(--mono); font-size:11.5px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .copy-btn { flex-shrink:0; width:26px; height:26px; border-radius:6px; background:transparent; border:1px solid var(--bd); color:var(--txm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .15s; }
+    .copy-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .branch-box.copied .copy-btn { border-color:var(--green); color:var(--green); }
+
+    /* coloured branch segments */
+    .t-sprint    { color: var(--orange); }
+    .t-parent    { color: var(--blue); }
+    .t-ticket    { color: var(--acc2); font-weight: 600; }
+    .t-slug      { color: var(--txd); }
+    .t-assignee  { color: var(--pink); }
+    .t-label     { color: var(--teal); }
+    .t-component { color: var(--lime); }
+    .t-type      { color: var(--yellow); }
+    .t-priority  { color: var(--red); }
+    .t-sep       { color: var(--txm); }
+    .t-raw       { color: var(--txd); }
+
+    /* ── Options chips ── */
+    .chips { display:flex; flex-wrap:wrap; gap:5px; }
+    .chip  { display:flex; align-items:center; gap:4px; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:4px 8px; font-size:10px; color:var(--txm); cursor:pointer; user-select:none; transition:all .12s; }
+    .chip input { display:none; }
+    .chip.on { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
+
+    /* ── Manual input ── */
+    .row { display:flex; gap:6px; }
+    input.txt { flex:1; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:7px 10px; font-family:var(--mono); font-size:11px; color:var(--tx); outline:none; transition:border-color .15s; }
+    input.txt::placeholder { color:var(--txm); }
+    input.txt:focus { border-color:var(--acc); }
+    .gen-btn { background:linear-gradient(135deg,var(--acc),#a855f7); border:none; border-radius:var(--r); padding:7px 13px; color:#fff; font-family:var(--sans); font-size:11px; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; white-space:nowrap; }
+    .gen-btn:hover { opacity:.9; } .gen-btn:active { transform:scale(.97); }
+    .hint { font-size:10px; color:var(--txm); }
+
+    /* ── Template page ── */
+    .tpl-wrap { display:flex; flex-direction:column; gap:10px; }
+    .preset-grid { display:flex; flex-wrap:wrap; gap:5px; }
+    .preset { font-family:var(--mono); font-size:10px; background:var(--s1); border:1px solid var(--bd); border-radius:5px; padding:4px 8px; cursor:pointer; color:var(--txd); transition:all .12s; white-space:nowrap; }
+    .preset:hover { border-color:var(--bd2); color:var(--tx); }
+    .preset.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
+
+    /* var pill grid */
+    .var-grid { display:flex; flex-wrap:wrap; gap:5px; }
+    .vp { font-family:var(--mono); font-size:10px; border-radius:5px; padding:3px 8px; cursor:pointer; border:1px solid; transition:opacity .12s; user-select:none; }
+    .vp:hover { opacity:.75; }
+    .vp.sprint    { color:var(--orange); border-color:rgba(251,146,60,.35); background:rgba(251,146,60,.08); }
+    .vp.parent    { color:var(--blue);   border-color:rgba(56,189,248,.35);  background:rgba(56,189,248,.08); }
+    .vp.ticket    { color:var(--acc2);   border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.08); }
+    .vp.slug      { color:var(--txd);    border-color:var(--bd);             background:var(--s1); }
+    .vp.title     { color:var(--txd);    border-color:var(--bd);             background:var(--s1); }
+    .vp.assignee  { color:var(--pink);   border-color:rgba(244,114,182,.35); background:rgba(244,114,182,.08); }
+    .vp.label     { color:var(--teal);   border-color:rgba(45,212,191,.35);  background:rgba(45,212,191,.08); }
+    .vp.component { color:var(--lime);   border-color:rgba(163,230,53,.35);  background:rgba(163,230,53,.08); }
+    .vp.type      { color:var(--yellow); border-color:rgba(251,191,36,.35);  background:rgba(251,191,36,.08); }
+    .vp.priority  { color:var(--red);    border-color:rgba(248,113,113,.35); background:rgba(248,113,113,.08); }
+
+    /* ── History page ── */
+    .hist-hdr { display:flex; align-items:center; justify-content:space-between; }
+    .hist-list { display:flex; flex-direction:column; gap:4px; }
+    .hi { display:flex; align-items:center; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:5px 9px; gap:8px; cursor:pointer; transition:border-color .12s; }
+    .hi:hover { border-color:var(--bd2); }
+    .hi .hi-name { font-family:var(--mono); font-size:10.5px; color:var(--txd); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .hi .hi-icon { font-size:11px; color:var(--txm); opacity:0; transition:opacity .12s; }
+    .hi:hover .hi-icon { opacity:1; }
+    .clear-btn { font-size:10px; color:var(--txm); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; }
+    .clear-btn:hover { color:var(--red); }
+
+    /* Toast */
+    .toast { position:fixed; bottom:10px; left:50%; transform:translateX(-50%) translateY(30px); background:var(--green); color:#071a0f; font-size:11px; font-weight:700; padding:5px 14px; border-radius:20px; opacity:0; transition:all .2s; pointer-events:none; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">⎇</div>
+  <div><h1>Branch Generator</h1><p>Jira fields → git branch</p></div>
+  <div class="status"><div class="dot" id="dot"></div><span id="statusTxt">—</span></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="main">Generate</div>
+  <div class="tab" data-tab="template">Template</div>
+  <div class="tab" data-tab="history">History</div>
+</div>
+
+<!-- ══ Generate ══════════════════════════════════════════════════ -->
+<div class="page active" id="page-main">
+
+  <!-- Detected fields grid -->
+  <div id="fieldsSection" style="display:none; flex-direction:column; gap:6px;">
+    <div class="slbl">Detected Fields</div>
+    <div class="fields-grid" id="fieldsGrid">
+      <!-- Cards injected by JS -->
+    </div>
+  </div>
+
+  <!-- Branch output -->
+  <div class="branch-wrap" id="branchWrap">
+    <div class="slbl">Generated Branch</div>
+    <div class="branch-box" id="branchBox">
+      <span class="branch-name" id="branchDisplay"></span>
+      <button class="copy-btn" id="copyBtn">⎘</button>
+    </div>
+    <!-- Base branch (shown only when parent exists) -->
+    <div id="baseBranchRow" style="display:none; flex-direction:column; gap:4px; margin-top:2px;">
+      <div style="font-size:9px;color:var(--txm);display:flex;align-items:center;gap:5px;padding:0 2px;">
+        <span style="opacity:.6">⤷</span> base branch
+        <label class="chip" id="baseChip" style="margin-left:auto;padding:2px 7px;">
+          <input type="checkbox" id="baseChk" checked />
+          auto-generate
+        </label>
+      </div>
+      <div class="branch-box" id="baseBranchBox">
+        <span class="branch-name" id="baseBranchDisplay"></span>
+        <button class="copy-btn" id="baseCopyBtn">⎘</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="chips" id="optChips" style="display:none">
+    <label class="chip" id="swChip"><input type="checkbox" id="swChk" checked>Remove stop words</label>
+    <label class="chip" id="upperChip"><input type="checkbox" id="upperChk" checked>UPPER IDs</label>
+  </div>
+
+  <!-- Manual input -->
+  <div style="display:flex; flex-direction:column; gap:5px;">
+    <div class="slbl">Manual Input</div>
+    <div class="row">
+      <input class="txt" type="text" id="manualInput" placeholder="[LH-48913] Planning: Implement Event Publisher…" />
+      <button class="gen-btn" id="genBtn">Go</button>
+    </div>
+    <div class="hint">Also: <code>s200/LH-48141/LH-48913 Title</code></div>
+  </div>
+
+</div>
+
+<!-- ══ Template ══════════════════════════════════════════════════ -->
+<div class="page" id="page-template">
+  <div class="tpl-wrap">
+
+    <div>
+      <div class="slbl" style="margin-bottom:5px">Template</div>
+      <input class="txt" type="text" id="tplInput" placeholder="{sprint}/{parent}/{ticket}-{slug}" style="font-size:12px;width:100%"/>
+    </div>
+
+    <!-- Live preview -->
+    <div class="branch-wrap show">
+      <div class="slbl">Preview</div>
+      <div class="branch-box" id="tplPreviewBox">
+        <span class="branch-name" id="tplPreview">—</span>
+        <button class="copy-btn" id="tplCopyBtn">⎘</button>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div>
+      <div class="slbl" style="margin-bottom:5px">Presets</div>
+      <div class="preset-grid" id="presetList"></div>
+    </div>
+
+    <!-- Variable pills -->
+    <div>
+      <div class="slbl" style="margin-bottom:5px">
+        Variables
+        <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to insert)</span>
+      </div>
+      <div class="var-grid" id="varGrid"></div>
+      <div class="hint" style="margin-top:6px">
+        Segments between <code>/</code> are dropped when their variables are empty.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ History ═══════════════════════════════════════════════════ -->
+<div class="page" id="page-history">
+  <div class="hist-hdr">
+    <div class="slbl" style="flex:1">Recent Branches</div>
+    <button class="clear-btn" id="clearBtn">clear all</button>
+  </div>
+  <div class="hist-list" id="histList">
+    <div class="hint" style="padding:8px 0">No history yet.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="branchUtils.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
