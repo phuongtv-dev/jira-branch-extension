@@ -21,20 +21,55 @@ function extractTicketInfo() {
   const urlMatch = window.location.pathname.match(/\/browse\/([A-Z]+-\d+)|\/issues\/([A-Z]+-\d+)/i);
   if (urlMatch) result.ticketId = (urlMatch[1] || urlMatch[2]).toUpperCase();
 
+  // Also check URL params: ?selectedIssue=LH-48913 or ?issueKey=LH-48913
+  if (!result.ticketId) {
+    const params = new URLSearchParams(window.location.search);
+    const paramId = params.get('selectedIssue') || params.get('issueKey') || params.get('issue');
+    if (paramId) {
+      const m = paramId.match(/([A-Z]+-\d+)/i);
+      if (m) result.ticketId = m[1].toUpperCase();
+    }
+  }
+
   if (!result.ticketId) {
     const m = document.title.match(/\[?([A-Z]+-\d+)\]?/i);
     if (m) result.ticketId = m[1].toUpperCase();
   }
 
   for (const sel of [
+    // Standard issue page
     '[data-testid="issue.views.issue-base.foundation.breadcrumbs.current-issue.item"]',
     '[class*="IssueKey"]', '[data-issue-key]', '#key-val', '.ghx-key',
+    // Sidebar / panel view (Jira board, backlog, list view)
+    '[data-testid*="issue-key"]',
+    '[data-testid*="issueKey"]',
+    '[class*="issueKey"]',
+    '[class*="issue-key"]',
+    // Jira work item panel (from screenshot)
+    '[data-component-selector="issue-view-foundation.ui.issue-key"] a',
+    '[data-testid="platform-board-kit.ui.card.card"] [data-testid*="key"]',
+    // Breadcrumb in sidebar panel
+    'nav[aria-label*="breadcrumb"] a[href*="/browse/"]',
+    'a[href*="/browse/"][class*="issue"]',
   ]) {
     if (result.ticketId) break;
-    const el = document.querySelector(sel);
-    if (el) {
-      const m = el.textContent.trim().match(/\b([A-Z]+-\d+)\b/i);
-      if (m) result.ticketId = m[1].toUpperCase();
+    const els = document.querySelectorAll(sel);
+    for (const el of els) {
+      const text = (el.textContent || el.getAttribute('href') || '').trim();
+      const m = text.match(/\b([A-Z]+-\d+)\b/i);
+      if (m) { result.ticketId = m[1].toUpperCase(); break; }
+    }
+  }
+
+  // Last resort: scan all links on page for /browse/TICKET-ID pattern
+  if (!result.ticketId) {
+    for (const a of document.querySelectorAll('a[href*="/browse/"]')) {
+      const m = a.getAttribute('href').match(/\/browse\/([A-Z]+-\d+)/i);
+      if (m) {
+        // Skip if it's a parent/epic link (usually in breadcrumbs above)
+        result.ticketId = m[1].toUpperCase();
+        break;
+      }
     }
   }
 
@@ -42,7 +77,16 @@ function extractTicketInfo() {
 
   for (const sel of [
     '[data-testid="issue.views.issue-base.foundation.summary.heading"]',
-    'h1[class*="summary"]', '#summary-val', '[class*="issueTitle"]', 'h1',
+    'h1[class*="summary"]', '#summary-val', '[class*="issueTitle"]',
+    // Sidebar panel selectors
+    '[data-testid*="summary"] h1',
+    '[data-testid*="issue-title"]',
+    '[class*="issue-title"]',
+    '[class*="issueSummary"]',
+    // Panel header
+    '[role="dialog"] h1',
+    '[role="complementary"] h1',
+    'h1',
   ]) {
     const el = document.querySelector(sel);
     if (el) {

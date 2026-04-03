@@ -1,17 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Jira Branch Generator",
-  "version": "1.0.0",
-  "description": "Auto-detect Jira ticket IDs and generate git branch names instantly.",
+  "version": "1.1.0",
+  "description": "Auto-detect Jira ticket IDs and generate git branch names instantly. Supports sidebar view, Bitbucket integration.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjS7Kn7qsKgcIfQ56zt4XoLaAP3JjtRiHfFa/VpsiG7wA2BLlO22mjalKwyfoaWFVxbesPkC7v4oe6i6Rts/A3YANNcgrle/iTIGpAZdKyKe7dkZd7ge8F+vPHJ7MDEbMpb9JhsRrsfNxHYD2pij1uPW7uFymelWvWdB6X6dF9VSWCa/BC1BL+l43OUhlglu+cEAB5TEDZ5lC/wgc6GlWlmQyascX/fROoQbn9PHrSd+Ek8lYEvyxxMoPaWowpE3g4gEkW05SYIfm4Bq+l/7mV+XftMbxhhVPf5aUltRQOEETkseKiUSdOa70tcRxCzA7kp5ttw7aEC+RrokU1KLW7QIDAQAB",
+  "background": {
+    "service_worker": "background.js"
+  },
   "permissions": [
     "activeTab",
     "scripting",
     "clipboardWrite",
-    "storage"
+    "storage",
+    "identity"
   ],
   "host_permissions": [
     "*://*.atlassian.net/*",
-    "*://*.jira.com/*"
+    "*://*.jira.com/*",
+    "*://bitbucket.org/*",
+    "*://api.bitbucket.org/*"
   ],
   "action": {
     "default_popup": "popup.html",

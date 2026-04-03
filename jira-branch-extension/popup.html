@@ -7,29 +7,29 @@
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
     :root {
-      --bg:       #0d0d14;
-      --s1:       #15151f;
-      --s2:       #1c1c2a;
-      --bd:       #28283e;
-      --bd2:      #35355a;
-      --acc:      #7c6af7;
-      --acc2:     #a78bfa;
-      --glow:     rgba(124,106,247,.2);
-      --green:    #4ade80;
-      --gbg:      rgba(74,222,128,.1);
-      --orange:   #fb923c;
-      --blue:     #38bdf8;
-      --yellow:   #fbbf24;
-      --pink:     #f472b6;
-      --teal:     #2dd4bf;
-      --lime:     #a3e635;
-      --red:      #f87171;
-      --tx:       #e2e2f0;
-      --txd:      #9898b8;
-      --txm:      #6b6b88;
-      --mono:     'JetBrains Mono', monospace;
-      --sans:     'DM Sans', sans-serif;
-      --r:        8px;
+      --bg:      #0d0d14;
+      --s1:      #15151f;
+      --s2:      #1c1c2a;
+      --bd:      #28283e;
+      --bd2:     #35355a;
+      --acc:     #7c6af7;
+      --acc2:    #a78bfa;
+      --glow:    rgba(124,106,247,.2);
+      --green:   #4ade80;
+      --gbg:     rgba(74,222,128,.1);
+      --orange:  #fb923c;
+      --blue:    #38bdf8;
+      --yellow:  #fbbf24;
+      --pink:    #f472b6;
+      --teal:    #2dd4bf;
+      --lime:    #a3e635;
+      --red:     #f87171;
+      --tx:      #e2e2f0;
+      --txd:     #9898b8;
+      --txm:     #6b6b88;
+      --mono:    'JetBrains Mono', monospace;
+      --sans:    'DM Sans', sans-serif;
+      --r:       8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { width: 430px; background: var(--bg); color: var(--tx); font-family: var(--sans); font-size: 13px; }
@@ -49,6 +49,7 @@
     .tab  { flex: 1; padding: 8px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; color: var(--txm); border-bottom: 2px solid transparent; transition: all .15s; user-select: none; }
     .tab.active { color: var(--acc2); border-bottom-color: var(--acc); }
     .tab:hover:not(.active) { color: var(--txd); }
+    .tab.bb-connected { color: var(--blue) !important; }
 
     /* Pages */
     .page { display: none; padding: 12px 14px; flex-direction: column; gap: 10px; }
@@ -58,94 +59,84 @@
     .slbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--txm); display: flex; align-items: center; gap: 6px; }
     .slbl::after { content:''; flex:1; height:1px; background:var(--bd); }
 
-    /* ── Detected fields grid ── */
+    /* Fields grid */
     .fields-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
-    .field-card  {
-      display: flex; flex-direction: column;
-      background: var(--s1); border: 1px solid var(--bd);
-      border-radius: var(--r); padding: 6px 8px; min-width: 0;
-      transition: border-color .12s;
-    }
+    .field-card  { display: flex; flex-direction: column; background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); padding: 6px 8px; min-width: 0; transition: border-color .12s; }
     .field-card:focus-within { border-color: var(--bd2); background: var(--s2); }
     .field-card.empty { opacity: .45; }
-    .field-card .fc-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--txm); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
-    .field-card .fc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .field-card input   { background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--tx); width: 100%; padding: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* colour per field */
-    .fc-sprint input  { color: var(--orange); }
-    .fc-parent input  { color: var(--blue); }
-    .fc-ticket input  { color: var(--acc2); }
-    .fc-assignee input{ color: var(--pink); }
-    .fc-label input   { color: var(--teal); }
-    .fc-component input { color: var(--lime); }
-    .fc-type input    { color: var(--yellow); }
-    .fc-priority input{ color: var(--red); }
-
-    .fc-sprint .fc-dot  { background: var(--orange); }
-    .fc-parent .fc-dot  { background: var(--blue); }
-    .fc-ticket .fc-dot  { background: var(--acc2); }
-    .fc-assignee .fc-dot{ background: var(--pink); }
-    .fc-label .fc-dot   { background: var(--teal); }
-    .fc-component .fc-dot{ background: var(--lime); }
-    .fc-type .fc-dot    { background: var(--yellow); }
-    .fc-priority .fc-dot{ background: var(--red); }
-
-    /* full-width title card */
-    .fields-grid .field-card.wide { grid-column: 1 / -1; }
+    .field-card.wide  { grid-column: 1/-1; }
+    .fc-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--txm); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+    .fc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+    .field-card input { background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--tx); width: 100%; padding: 0; }
+    .fc-sprint input { color: var(--orange); } .fc-sprint .fc-dot { background: var(--orange); }
+    .fc-parent input { color: var(--blue); }   .fc-parent .fc-dot { background: var(--blue); }
+    .fc-ticket input { color: var(--acc2); }   .fc-ticket .fc-dot { background: var(--acc2); }
+    .fc-assignee input { color: var(--pink); } .fc-assignee .fc-dot { background: var(--pink); }
+    .fc-label input { color: var(--teal); }    .fc-label .fc-dot { background: var(--teal); }
+    .fc-component input { color: var(--lime); }.fc-component .fc-dot { background: var(--lime); }
+    .fc-type input { color: var(--yellow); }   .fc-type .fc-dot { background: var(--yellow); }
+    .fc-priority input { color: var(--red); }  .fc-priority .fc-dot { background: var(--red); }
     .fc-title input { color: var(--txd); font-size: 10.5px; }
 
-    /* ── Branch output ── */
+    /* Branch box */
     .branch-wrap { display:none; flex-direction:column; gap:5px; }
     .branch-wrap.show { display:flex; }
-    .branch-box  { background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:9px 11px; display:flex; align-items:center; gap:8px; cursor:pointer; transition:border-color .15s,background .15s; }
+    .branch-row  { display: flex; flex-direction: column; gap: 4px; }
+    .branch-box  { background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:8px 10px; display:flex; align-items:center; gap:6px; cursor:pointer; transition:border-color .15s,background .15s; }
     .branch-box:hover  { border-color:var(--acc); background:var(--s2); }
     .branch-box.copied { border-color:var(--green); background:var(--gbg); }
-    .branch-name { font-family:var(--mono); font-size:11.5px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .copy-btn { flex-shrink:0; width:26px; height:26px; border-radius:6px; background:transparent; border:1px solid var(--bd); color:var(--txm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .15s; }
-    .copy-btn:hover { border-color:var(--acc); color:var(--acc2); }
-    .branch-box.copied .copy-btn { border-color:var(--green); color:var(--green); }
+    .branch-name { font-family:var(--mono); font-size:11px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .btn-group   { display:flex; gap:4px; flex-shrink:0; }
+    .icon-btn    { width:26px; height:26px; border-radius:6px; background:transparent; border:1px solid var(--bd); color:var(--txm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .15s; }
+    .icon-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    .icon-btn.create-btn:hover { border-color:var(--green); color:var(--green); }
 
-    /* coloured branch segments */
-    .t-sprint    { color: var(--orange); }
-    .t-parent    { color: var(--blue); }
-    .t-ticket    { color: var(--acc2); font-weight: 600; }
-    .t-slug      { color: var(--txd); }
-    .t-assignee  { color: var(--pink); }
-    .t-label     { color: var(--teal); }
-    .t-component { color: var(--lime); }
-    .t-type      { color: var(--yellow); }
-    .t-priority  { color: var(--red); }
-    .t-sep       { color: var(--txm); }
-    .t-raw       { color: var(--txd); }
+    /* base branch */
+    .base-row { display:none; flex-direction:column; gap:3px; margin-top:1px; }
+    .base-row.show { display:flex; }
+    .base-lbl { font-size:9px; color:var(--txm); display:flex; align-items:center; gap:5px; padding:0 2px; }
+    .base-chip { margin-left:auto; display:flex; align-items:center; gap:4px; background:var(--s1); border:1px solid var(--bd); border-radius:5px; padding:2px 7px; font-size:9px; color:var(--txm); cursor:pointer; user-select:none; }
+    .base-chip input { display:none; }
+    .base-chip.on { border-color:var(--acc); color:var(--acc2); }
 
-    /* ── Options chips ── */
+    /* segment colours */
+    .t-sprint { color:var(--orange); } .t-parent { color:var(--blue); }
+    .t-ticket { color:var(--acc2); font-weight:600; } .t-slug { color:var(--txd); }
+    .t-assignee { color:var(--pink); } .t-label { color:var(--teal); }
+    .t-component { color:var(--lime); } .t-type { color:var(--yellow); }
+    .t-priority { color:var(--red); } .t-sep { color:var(--txm); } .t-raw { color:var(--txd); }
+
+    /* Chips */
     .chips { display:flex; flex-wrap:wrap; gap:5px; }
     .chip  { display:flex; align-items:center; gap:4px; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:4px 8px; font-size:10px; color:var(--txm); cursor:pointer; user-select:none; transition:all .12s; }
     .chip input { display:none; }
     .chip.on { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
 
-    /* ── Manual input ── */
+    /* Inputs */
     .row { display:flex; gap:6px; }
     input.txt { flex:1; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:7px 10px; font-family:var(--mono); font-size:11px; color:var(--tx); outline:none; transition:border-color .15s; }
     input.txt::placeholder { color:var(--txm); }
     input.txt:focus { border-color:var(--acc); }
+    input.txt.err { border-color:var(--red); }
     .gen-btn { background:linear-gradient(135deg,var(--acc),#a855f7); border:none; border-radius:var(--r); padding:7px 13px; color:#fff; font-family:var(--sans); font-size:11px; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; white-space:nowrap; }
     .gen-btn:hover { opacity:.9; } .gen-btn:active { transform:scale(.97); }
     .hint { font-size:10px; color:var(--txm); }
 
-    /* ── Template page ── */
-    .tpl-wrap { display:flex; flex-direction:column; gap:10px; }
-    .preset-grid { display:flex; flex-wrap:wrap; gap:5px; }
-    .preset { font-family:var(--mono); font-size:10px; background:var(--s1); border:1px solid var(--bd); border-radius:5px; padding:4px 8px; cursor:pointer; color:var(--txd); transition:all .12s; white-space:nowrap; }
-    .preset:hover { border-color:var(--bd2); color:var(--tx); }
-    .preset.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
-
-    /* var pill grid */
+    /* Template page */
+    .preset-list { display:flex; flex-direction:column; gap:4px; }
+    .preset-item { display:flex; align-items:center; gap:6px; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:6px 10px; }
+    .preset-item.active { border-color:var(--acc); background:rgba(124,106,247,.08); }
+    .preset-item .pi-tpl  { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .preset-item.active .pi-tpl { color:var(--acc2); }
+    .preset-item .pi-name { font-size:10px; color:var(--txm); flex-shrink:0; }
+    .preset-item .pi-del  { width:20px; height:20px; border-radius:4px; background:transparent; border:none; color:var(--txm); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .preset-item .pi-del:hover { color:var(--red); }
+    .add-preset-row { display:flex; gap:5px; }
+    .add-name { width:90px; flex-shrink:0; }
     .var-grid { display:flex; flex-wrap:wrap; gap:5px; }
-    .vp { font-family:var(--mono); font-size:10px; border-radius:5px; padding:3px 8px; cursor:pointer; border:1px solid; transition:opacity .12s; user-select:none; }
+    .vp { font-family:var(--mono); font-size:10px; border-radius:5px; padding:3px 8px; cursor:pointer; border:1px solid; user-select:none; }
     .vp:hover { opacity:.75; }
-    .vp.sprint    { color:var(--orange); border-color:rgba(251,146,60,.35); background:rgba(251,146,60,.08); }
+    .vp.sprint    { color:var(--orange); border-color:rgba(251,146,60,.35);  background:rgba(251,146,60,.08); }
     .vp.parent    { color:var(--blue);   border-color:rgba(56,189,248,.35);  background:rgba(56,189,248,.08); }
     .vp.ticket    { color:var(--acc2);   border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.08); }
     .vp.slug      { color:var(--txd);    border-color:var(--bd);             background:var(--s1); }
@@ -156,9 +147,67 @@
     .vp.type      { color:var(--yellow); border-color:rgba(251,191,36,.35);  background:rgba(251,191,36,.08); }
     .vp.priority  { color:var(--red);    border-color:rgba(248,113,113,.35); background:rgba(248,113,113,.08); }
 
-    /* ── History page ── */
+    /* ── Bitbucket page ── */
+    .bb-wrap { display:flex; flex-direction:column; gap:12px; }
+
+    /* Auth method tabs */
+    .auth-tabs { display:flex; gap:6px; }
+    .auth-tab  { flex:1; padding:7px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); font-size:11px; font-weight:600; text-align:center; cursor:pointer; color:var(--txm); transition:all .15s; user-select:none; }
+    .auth-tab.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
+
+    /* OAuth panel */
+    .oauth-panel, .apppass-panel { display:none; flex-direction:column; gap:10px; }
+    .oauth-panel.show, .apppass-panel.show { display:flex; }
+
+    .bb-connect-box { display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); text-align:center; }
+    .bb-connect-box p { font-size:11px; color:var(--txm); line-height:1.5; }
+    .bb-btn { background:#0052cc; border:none; border-radius:var(--r); padding:8px 16px; color:#fff; font-family:var(--sans); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:opacity .15s; }
+    .bb-btn:hover { opacity:.85; }
+    .bb-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* App password panel */
+    .apppass-form { display:flex; flex-direction:column; gap:7px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:12px; }
+    .apppass-form label { font-size:10px; color:var(--txm); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    .apppass-form .hint a { color:var(--acc2); text-decoration:none; }
+    .apppass-form .hint a:hover { text-decoration:underline; }
+
+    /* Guide box */
+    .guide-box   { background:var(--s2); border:1px solid var(--bd); border-left:3px solid var(--blue); border-radius:var(--r); padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+    .guide-title { font-size:11px; font-weight:600; color:var(--blue); }
+    .guide-steps { display:flex; flex-direction:column; gap:6px; }
+    .guide-step  { display:flex; align-items:flex-start; gap:8px; font-size:10.5px; color:var(--txd); line-height:1.5; }
+    .step-num    { background:var(--blue); color:#071a2e; width:16px; height:16px; border-radius:50%; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+    .guide-step a    { color:var(--acc2); text-decoration:none; }
+    .guide-step a:hover { text-decoration:underline; }
+    .guide-step strong { color:var(--tx); }
+    .guide-step em   { color:var(--txm); font-style:normal; }
+    .guide-link  { font-size:10px; color:var(--blue); text-decoration:none; font-weight:600; }
+    .guide-link:hover { text-decoration:underline; }
+    .save-btn { background:linear-gradient(135deg,var(--acc),#a855f7); border:none; border-radius:var(--r); padding:7px; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:opacity .15s; }
+    .save-btn:hover { opacity:.9; }
+    .save-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+    /* Connected user */
+    .bb-user { display:flex; align-items:center; gap:10px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:10px 12px; }
+    .bb-avatar { width:30px; height:30px; border-radius:50%; background:var(--bd); flex-shrink:0; object-fit:cover; }
+    .bb-user-info { flex:1; }
+    .bb-user-info .name  { font-size:12px; font-weight:600; }
+    .bb-user-info .meth  { font-size:9px; color:var(--txm); margin-top:1px; }
+    .disconnect-btn { background:transparent; border:1px solid var(--red); border-radius:6px; color:var(--red); font-size:10px; padding:4px 9px; cursor:pointer; white-space:nowrap; }
+    .disconnect-btn:hover { background:rgba(248,113,113,.1); }
+
+    /* Favorites */
+    .fav-item { display:flex; align-items:center; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:6px 10px; gap:8px; }
+    .fav-item .fi-name { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; }
+    .fav-item .fi-del  { background:transparent; border:none; color:var(--txm); cursor:pointer; font-size:14px; padding:0; line-height:1; }
+    .fav-item .fi-del:hover { color:var(--red); }
+    .bb-select { flex:1; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:7px 10px; font-family:var(--mono); font-size:11px; color:var(--tx); outline:none; }
+    .bb-select:focus { border-color:var(--acc); }
+    .small-btn { background:var(--s2); border:1px solid var(--bd); border-radius:var(--r); padding:7px 11px; color:var(--txd); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
+    .small-btn:hover { border-color:var(--acc); color:var(--acc2); }
+
+    /* History */
     .hist-hdr { display:flex; align-items:center; justify-content:space-between; }
-    .hist-list { display:flex; flex-direction:column; gap:4px; }
     .hi { display:flex; align-items:center; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:5px 9px; gap:8px; cursor:pointer; transition:border-color .12s; }
     .hi:hover { border-color:var(--bd2); }
     .hi .hi-name { font-family:var(--mono); font-size:10.5px; color:var(--txd); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -167,9 +216,40 @@
     .clear-btn { font-size:10px; color:var(--txm); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; }
     .clear-btn:hover { color:var(--red); }
 
-    /* Toast */
-    .toast { position:fixed; bottom:10px; left:50%; transform:translateX(-50%) translateY(30px); background:var(--green); color:#071a0f; font-size:11px; font-weight:700; padding:5px 14px; border-radius:20px; opacity:0; transition:all .2s; pointer-events:none; }
+    /* Modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; align-items:center; justify-content:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--s1); border:1px solid var(--bd2); border-radius:12px; width:390px; max-height:480px; display:flex; flex-direction:column; overflow:hidden; }
+    .modal-hdr { padding:14px 16px; border-bottom:1px solid var(--bd); }
+    .modal-hdr h3 { font-size:13px; font-weight:600; margin-bottom:5px; }
+    .modal-branch { font-family:var(--mono); font-size:10px; color:var(--acc2); background:rgba(124,106,247,.1); border-radius:5px; padding:3px 8px; word-break:break-all; display:inline-block; }
+    .modal-body { padding:12px 16px; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; min-height:0; }
+    .modal-ftr  { padding:10px 16px; border-top:1px solid var(--bd); display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; background:var(--s1); }
+    .repo-list  { display:flex; flex-direction:column; gap:4px; }
+    .repo-item  { display:flex; align-items:center; gap:8px; background:var(--s2); border:1px solid var(--bd); border-radius:6px; padding:7px 10px; cursor:pointer; transition:border-color .12s; }
+    .repo-item:hover { border-color:var(--bd2); }
+    .repo-item.checked { border-color:var(--acc); background:rgba(124,106,247,.08); }
+    .repo-check { width:14px; height:14px; border-radius:3px; border:1px solid var(--bd2); display:flex; align-items:center; justify-content:center; font-size:9px; color:transparent; flex-shrink:0; }
+    .repo-item.checked .repo-check { background:var(--acc); border-color:var(--acc); color:#fff; }
+    .repo-name { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; }
+    .repo-item.checked .repo-name { color:var(--tx); }
+    .repo-ws   { font-size:9px; color:var(--txm); }
+    .result-item     { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; font-size:11px; }
+    .result-item.ok  { background:var(--gbg); color:var(--green); }
+    .result-item.err { background:rgba(248,113,113,.1); color:var(--red); }
+    .result-item .ri-repo { font-family:var(--mono); flex:1; }
+    .cancel-btn  { background:transparent; border:1px solid var(--bd); border-radius:var(--r); padding:7px 14px; color:var(--txm); font-size:12px; cursor:pointer; }
+    .cancel-btn:hover { border-color:var(--bd2); color:var(--tx); }
+    .confirm-btn { background:linear-gradient(135deg,#0052cc,#0066ff); border:none; border-radius:var(--r); padding:7px 16px; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:opacity .15s; }
+    .confirm-btn:hover { opacity:.85; }
+    .confirm-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+    .spinner { display:inline-block; width:11px; height:11px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .toast { position:fixed; bottom:10px; left:50%; transform:translateX(-50%) translateY(30px); background:var(--green); color:#071a0f; font-size:11px; font-weight:700; padding:5px 14px; border-radius:20px; opacity:0; transition:all .2s; pointer-events:none; white-space:nowrap; }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast.error { background:var(--red); color:#fff; }
   </style>
 </head>
 <body>
@@ -183,51 +263,51 @@
 <div class="tabs">
   <div class="tab active" data-tab="main">Generate</div>
   <div class="tab" data-tab="template">Template</div>
+  <div class="tab" data-tab="bitbucket" id="bbTab">Bitbucket</div>
   <div class="tab" data-tab="history">History</div>
 </div>
 
 <!-- ══ Generate ══════════════════════════════════════════════════ -->
 <div class="page active" id="page-main">
-
-  <!-- Detected fields grid -->
-  <div id="fieldsSection" style="display:none; flex-direction:column; gap:6px;">
+  <div id="fieldsSection" style="display:none;flex-direction:column;gap:6px;">
     <div class="slbl">Detected Fields</div>
-    <div class="fields-grid" id="fieldsGrid">
-      <!-- Cards injected by JS -->
-    </div>
+    <div class="fields-grid" id="fieldsGrid"></div>
   </div>
 
-  <!-- Branch output -->
   <div class="branch-wrap" id="branchWrap">
     <div class="slbl">Generated Branch</div>
-    <div class="branch-box" id="branchBox">
-      <span class="branch-name" id="branchDisplay"></span>
-      <button class="copy-btn" id="copyBtn">⎘</button>
-    </div>
-    <!-- Base branch (shown only when parent exists) -->
-    <div id="baseBranchRow" style="display:none; flex-direction:column; gap:4px; margin-top:2px;">
-      <div style="font-size:9px;color:var(--txm);display:flex;align-items:center;gap:5px;padding:0 2px;">
-        <span style="opacity:.6">⤷</span> base branch
-        <label class="chip" id="baseChip" style="margin-left:auto;padding:2px 7px;">
-          <input type="checkbox" id="baseChk" checked />
-          auto-generate
-        </label>
+    <div class="branch-row">
+      <div class="branch-box" id="branchBox">
+        <span class="branch-name" id="branchDisplay"></span>
+        <div class="btn-group">
+          <button class="icon-btn create-btn" id="createBtn" title="Create on Bitbucket">⎇</button>
+          <button class="icon-btn" id="copyBtn" title="Copy">⎘</button>
+        </div>
       </div>
-      <div class="branch-box" id="baseBranchBox">
-        <span class="branch-name" id="baseBranchDisplay"></span>
-        <button class="copy-btn" id="baseCopyBtn">⎘</button>
+      <div class="base-row" id="baseRow">
+        <div class="base-lbl">
+          <span style="opacity:.5">⤷</span> base branch
+          <label class="base-chip on" id="baseChip">
+            <input type="checkbox" id="baseChk" checked />auto-generate
+          </label>
+        </div>
+        <div class="branch-box" id="baseBranchBox">
+          <span class="branch-name" id="baseBranchDisplay"></span>
+          <div class="btn-group">
+            <button class="icon-btn create-btn" id="baseCreateBtn" title="Create on Bitbucket">⎇</button>
+            <button class="icon-btn" id="baseCopyBtn" title="Copy">⎘</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Options -->
   <div class="chips" id="optChips" style="display:none">
-    <label class="chip" id="swChip"><input type="checkbox" id="swChk" checked>Remove stop words</label>
-    <label class="chip" id="upperChip"><input type="checkbox" id="upperChk" checked>UPPER IDs</label>
+    <label class="chip on" id="swChip"><input type="checkbox" id="swChk" checked>Stop words</label>
+    <label class="chip on" id="upperChip"><input type="checkbox" id="upperChk" checked>UPPER IDs</label>
   </div>
 
-  <!-- Manual input -->
-  <div style="display:flex; flex-direction:column; gap:5px;">
+  <div style="display:flex;flex-direction:column;gap:5px;">
     <div class="slbl">Manual Input</div>
     <div class="row">
       <input class="txt" type="text" id="manualInput" placeholder="[LH-48913] Planning: Implement Event Publisher…" />
@@ -235,42 +315,110 @@
     </div>
     <div class="hint">Also: <code>s200/LH-48141/LH-48913 Title</code></div>
   </div>
-
 </div>
 
 <!-- ══ Template ══════════════════════════════════════════════════ -->
 <div class="page" id="page-template">
-  <div class="tpl-wrap">
-
+  <div style="display:flex;flex-direction:column;gap:10px;">
     <div>
-      <div class="slbl" style="margin-bottom:5px">Template</div>
-      <input class="txt" type="text" id="tplInput" placeholder="{sprint}/{parent}/{ticket}-{slug}" style="font-size:12px;width:100%"/>
+      <div class="slbl" style="margin-bottom:6px">Presets <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to use)</span></div>
+      <div class="preset-list" id="presetList"></div>
     </div>
-
-    <!-- Live preview -->
-    <div class="branch-wrap show">
-      <div class="slbl">Preview</div>
-      <div class="branch-box" id="tplPreviewBox">
-        <span class="branch-name" id="tplPreview">—</span>
-        <button class="copy-btn" id="tplCopyBtn">⎘</button>
+    <div>
+      <div class="slbl" style="margin-bottom:6px">Add Preset</div>
+      <div class="add-preset-row">
+        <input class="txt add-name" type="text" id="newPresetName" placeholder="Name" style="font-size:11px" />
+        <input class="txt" type="text" id="newPresetTpl" placeholder="{sprint}/{parent}/{ticket}-{slug}" style="font-size:11px" />
+        <button class="small-btn" id="addPresetBtn">Add</button>
       </div>
     </div>
-
-    <!-- Presets -->
     <div>
-      <div class="slbl" style="margin-bottom:5px">Presets</div>
-      <div class="preset-grid" id="presetList"></div>
-    </div>
-
-    <!-- Variable pills -->
-    <div>
-      <div class="slbl" style="margin-bottom:5px">
-        Variables
-        <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to insert)</span>
-      </div>
+      <div class="slbl" style="margin-bottom:5px">Variables <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to insert)</span></div>
       <div class="var-grid" id="varGrid"></div>
-      <div class="hint" style="margin-top:6px">
-        Segments between <code>/</code> are dropped when their variables are empty.
+    </div>
+  </div>
+</div>
+
+<!-- ══ Bitbucket ═════════════════════════════════════════════════ -->
+<div class="page" id="page-bitbucket">
+  <div class="bb-wrap">
+
+    <!-- Connected user (shown when logged in) -->
+    <div id="bbUserCard" style="display:none">
+      <div class="bb-user">
+        <img class="bb-avatar" id="bbAvatar" src="" alt="" />
+        <div class="bb-user-info">
+          <div class="name" id="bbUserName">—</div>
+          <div class="meth" id="bbAuthMethod">—</div>
+        </div>
+        <button class="disconnect-btn" id="bbLogoutBtn">Disconnect</button>
+      </div>
+    </div>
+
+    <!-- Auth options (shown when not logged in) -->
+    <div id="bbAuthPanel">
+
+      <!-- API Token form - shown directly, no tabs -->
+      <div class="apppass-form">
+
+        <!-- Guide - always expanded -->
+        <div class="guide-box">
+          <div class="guide-title">📖 Hướng dẫn lấy API Token</div>
+          <div class="guide-steps" style="margin-top:8px">
+            <div class="guide-step">
+              <span class="step-num">1</span>
+              <span>Vào <a href="https://bitbucket.org/account/settings/" target="_blank">bitbucket.org</a> → click <strong>avatar</strong> góc phải → <strong>Personal Bitbucket settings</strong><br/><em style="color:var(--red);font-size:10px">⚠️ Không phải "Account settings"</em></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">2</span>
+              <span><strong>Lấy email:</strong> Sidebar → <strong>Account settings</strong> → xem dòng <em style="color:var(--yellow)">"Your Atlassian account address is: ..."</em></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">3</span>
+              <span><strong>Tạo token:</strong> Sidebar → <strong>API tokens</strong> → <strong>Create API token</strong></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">4</span>
+              <span>Tick scope → <strong>Create</strong> → copy token (chỉ hiện 1 lần)</span>
+            </div>
+            <div style="background:var(--s2);border-radius:6px;padding:7px 10px;margin-left:24px;font-size:10px;line-height:1.7">
+              <span style="color:var(--green)">✅ Repositories → Read</span><br/>
+              <span style="color:var(--green)">✅ Repositories → Write</span><br/>
+              <span style="color:var(--txm);font-style:italic">Không cần tick Account hay Workspace</span>
+            </div>
+          </div>
+          <a class="guide-link" href="https://bitbucket.org/account/settings/api-tokens/new" target="_blank" style="display:block;margin-top:8px">
+            → Mở trang tạo API Token ↗
+          </a>
+        </div>
+
+        <label style="margin-top:8px">Atlassian Email</label>
+        <input class="txt" type="text" id="bbUsername" placeholder="you@company.com" style="font-size:11px" />
+        <div class="hint" style="margin-top:-2px">Email Atlassian — xem bước 2 ở trên</div>
+
+        <label style="margin-top:6px">API Token</label>
+        <input class="txt" type="password" id="bbAppPass" placeholder="ATCTT3xFf..." style="font-size:11px" />
+        <div class="hint" style="margin-top:-2px">Token chỉ hiện 1 lần khi tạo — copy và paste vào đây</div>
+
+        <button class="save-btn" id="bbSaveAppPass" style="margin-top:8px">🔗 Save & Connect</button>
+      </div>
+    </div>
+
+    <!-- Favorites (shown when logged in) -->
+    <div id="bbFavsSection" style="display:none;flex-direction:column;gap:8px;">
+      <div>
+        <div class="slbl" style="margin-bottom:6px">Favorite Repos</div>
+        <div id="favList">
+          <div class="hint" style="padding:4px 0">No favorites yet.</div>
+        </div>
+      </div>
+      <div>
+        <div class="slbl" style="margin-bottom:6px">Add Favorite</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <select class="bb-select" id="wsSelect" style="width:100%"><option value="">Workspace…</option></select>
+          <select class="bb-select" id="repoSelect" style="width:100%"><option value="">Repo…</option></select>
+          <button class="small-btn" id="addFavBtn" style="width:100%">★ Add to favorites</button>
+        </div>
       </div>
     </div>
 
@@ -283,13 +431,28 @@
     <div class="slbl" style="flex:1">Recent Branches</div>
     <button class="clear-btn" id="clearBtn">clear all</button>
   </div>
-  <div class="hist-list" id="histList">
-    <div class="hint" style="padding:8px 0">No history yet.</div>
+  <div id="histList"><div class="hint" style="padding:8px 0">No history yet.</div></div>
+</div>
+
+<!-- ══ Modal ════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Create Branch on Bitbucket</h3>
+      <span class="modal-branch" id="modalBranchName"></span>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-ftr">
+      <button class="cancel-btn" id="modalCancel">Cancel</button>
+      <button class="confirm-btn" id="modalConfirm">Create Branch</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
 <script src="branchUtils.js"></script>
+<script src="bitbucket.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>
