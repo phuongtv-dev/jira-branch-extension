@@ -11,8 +11,7 @@
     "activeTab",
     "scripting",
     "clipboardWrite",
-    "storage",
-    "identity"
+    "storage"
   ],
   "host_permissions": [
     "*://*.atlassian.net/*",

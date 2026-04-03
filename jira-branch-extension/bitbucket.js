@@ -10,14 +10,13 @@ async function bbSend(action, extra = {}) {
   });
 }
 
-const bbOAuthLogin         = ()           => bbSend('bb_oauth_login');
-const bbAppPasswordLogin   = (u, p)       => bbSend('bb_app_password_login', { username:u, password:p });
-const clearTokens          = ()           => bbSend('bb_logout');
-const bbGetUser            = ()           => bbSend('bb_get_user');
-const bbGetWorkspaces      = ()           => bbSend('bb_get_workspaces');
-const bbGetRepos           = ws           => bbSend('bb_get_repos', { workspace:ws });
-const bbIsLoggedIn         = ()           => bbSend('bb_is_logged_in');
-const bbCreateBranch       = (ws,r,b,f)   => bbSend('bb_create_branch', { workspace:ws, repo:r, branchName:b, fromBranch:f });
+const bbAppPasswordLogin = (u, p) => bbSend('bb_app_password_login', { username:u, password:p });
+const clearTokens        = ()      => bbSend('bb_logout');
+const bbGetUser          = ()      => bbSend('bb_get_user');
+const bbGetWorkspaces    = ()      => bbSend('bb_get_workspaces');
+const bbGetRepos         = ws      => bbSend('bb_get_repos', { workspace:ws });
+const bbIsLoggedIn       = ()      => bbSend('bb_is_logged_in');
+const bbCreateBranch     = (ws,r,b)=> bbSend('bb_create_branch', { workspace:ws, repo:r, branchName:b });
 
 // ── Favorites ──────────────────────────────────────────────────────────────
 async function getFavorites() {
