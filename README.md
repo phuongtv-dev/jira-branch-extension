@@ -27,19 +27,19 @@
 
 | Field | Value |
 |-------|-------|
-| Sprint | 200 |
-| Parent | LH-48141 |
-| Ticket | LH-48913 |
-| Title | Planning System: Implement Event Publisher for Portal Integration |
+| Sprint | 500 |
+| Parent | PV-98141 |
+| Ticket | PV-98141 |
+| Title | Implement Event Publisher for Portal Integration |
 
 **Output:**
 ```
-s200/LH-48141/LH-48913-planning-system-implement-event-publisher-portal-integration
+s500/PV-98141/PV-98141-implement-event-publisher-portal-integration
 ```
 
 **Base branch:**
 ```
-s200/LH-48141/base
+s500/PV-98141/base
 ```
 
 ---
@@ -62,9 +62,9 @@ Search for **Jira Branch Generator** or install directly from the store link.
 
 | Variable | Example output | Description |
 |----------|---------------|-------------|
-| `{sprint}` | `s200` | Sprint number, prefixed with `s` |
-| `{parent}` | `LH-48141` | Parent ticket ID |
-| `{ticket}` | `LH-48913` | Current ticket ID |
+| `{sprint}` | `s500` | Sprint number, prefixed with `s` |
+| `{parent}` | `PV-98141` | Parent ticket ID |
+| `{ticket}` | `PV-98141` | Current ticket ID |
 | `{slug}` | `planning-system-implement` | Title slugified, stop words removed |
 | `{title}` | `Planning-System-Implement` | Raw title, spaces → dashes |
 | `{assignee}` | `nguyen-van-a` | Assignee name, slugified |
