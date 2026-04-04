@@ -72,18 +72,18 @@
         <div class="subtitle">Chrome Extension – Privacy Policy</div>
       </div>
     </div>
-    <div class="updated">Last updated: June 2025</div>
+    <div class="updated">Last updated: April 2026</div>
   </header>
 
   <div class="highlight">
     <div class="badge">TL;DR</div>
-    <p>This extension does not collect, transmit, or share any of your data. Everything stays on your device.</p>
+    <p>This extension does not collect, transmit, or share any of your data. API tokens are stored only on your device. Network requests are made only to Bitbucket and GitHub when you explicitly create a branch.</p>
   </div>
 
   <h2>1. What data we access</h2>
   <p>When you open a Jira ticket page, the extension reads the following information directly from your browser's DOM (the visible page content):</p>
   <ul>
-    <li>Ticket ID (e.g. LH-48913)</li>
+    <li>Ticket ID (e.g. PV-98912)</li>
     <li>Ticket title and summary</li>
     <li>Sprint name/number</li>
     <li>Parent ticket ID</li>
@@ -95,44 +95,62 @@
   <h2>2. What data we store</h2>
   <p>The extension stores the following data <strong>locally on your device only</strong>, using Chrome's built-in <code>chrome.storage.local</code> API:</p>
   <ul>
-    <li>Your branch name template preference</li>
-    <li>Your option settings (stop words, uppercase IDs, base branch toggle)</li>
+    <li>Your branch name template preference and custom presets</li>
+    <li>Your option settings (stop words, uppercase IDs, base branch toggle, theme)</li>
     <li>A history of recently generated branch names (up to 15 entries)</li>
+    <li>Bitbucket API token and email (if you connect Bitbucket) — stored locally, never transmitted</li>
+    <li>GitHub Personal Access Token and username (if you connect GitHub) — stored locally, never transmitted</li>
+    <li>Your list of favorite repos for Bitbucket and GitHub</li>
   </ul>
-  <p>This data never leaves your device and is never transmitted to any server.</p>
+  <p>This data never leaves your device except when making explicit API calls to create branches (see section 4).</p>
 
   <h2>3. What data we do NOT collect</h2>
   <ul>
     <li>No analytics or usage tracking</li>
     <li>No crash reporting</li>
-    <li>No personal information</li>
-    <li>No Jira credentials or authentication tokens</li>
-    <li>No network requests are made by this extension</li>
+    <li>No personal information sent to any server</li>
+    <li>No Jira credentials or Jira authentication tokens</li>
   </ul>
 
-  <h2>4. Third-party services</h2>
-  <p>This extension does not integrate with, send data to, or rely on any third-party services or APIs.</p>
+  <h2>4. Third-party API calls</h2>
+  <p>This extension makes network requests <strong>only when you explicitly click the Create Branch button</strong>. At that point, it calls:</p>
+  <ul>
+    <li><strong>Bitbucket REST API</strong> (<code>api.bitbucket.org</code>) — to list workspaces, repos, and create branches using your stored API token.</li>
+    <li><strong>GitHub REST API</strong> (<code>api.github.com</code>) — to list orgs, repos, and create branches using your stored Personal Access Token.</li>
+  </ul>
+  <p>No data from Jira or your branch name is sent to Bitbucket or GitHub other than the branch name itself when creating a branch.</p>
 
   <h2>5. Permissions explained</h2>
   <ul>
     <li><strong>activeTab</strong> — Read ticket information from the Jira tab you are currently viewing.</li>
     <li><strong>scripting</strong> — Inject a small script to extract ticket fields from the Jira page DOM.</li>
-    <li><strong>storage</strong> — Save your preferences and branch history locally on your device.</li>
+    <li><strong>storage</strong> — Save your preferences, API tokens, favorite repos, and branch history locally on your device.</li>
     <li><strong>clipboardWrite</strong> — Copy the generated branch name to your clipboard when you click the copy button.</li>
     <li><strong>Host permissions (*.atlassian.net, *.jira.com)</strong> — Required to run the content script on Jira Cloud pages.</li>
+    <li><strong>Host permissions (api.bitbucket.org)</strong> — Required to create branches via Bitbucket REST API.</li>
+    <li><strong>Host permissions (api.github.com)</strong> — Required to create branches via GitHub REST API.</li>
   </ul>
 
   <h2>6. Data retention</h2>
-  <p>All locally stored data (history, preferences) can be cleared at any time from within the extension by clicking "clear all" in the History tab. Uninstalling the extension removes all stored data automatically.</p>
+  <p>All locally stored data (history, preferences, API tokens) can be cleared at any time:</p>
+  <ul>
+    <li>Branch history — click "clear all" in the History tab</li>
+    <li>Bitbucket connection — click "Disconnect" in the Bitbucket tab</li>
+    <li>GitHub connection — click "Disconnect" in the GitHub tab</li>
+  </ul>
+  <p>Uninstalling the extension removes all stored data automatically.</p>
 
-  <h2>7. Changes to this policy</h2>
+  <h2>7. Security</h2>
+  <p>API tokens (Bitbucket and GitHub) are stored in <code>chrome.storage.local</code>, which is sandboxed to this extension only. No other extension or website can access this data. We recommend using tokens with the minimum required scopes and setting an expiry date.</p>
+
+  <h2>8. Changes to this policy</h2>
   <p>If this policy changes, the updated version will be published at this URL. The extension does not currently have an automatic update notification for policy changes.</p>
 
-  <h2>8. Contact</h2>
+  <h2>9. Contact</h2>
   <p>If you have any questions about this privacy policy, please open an issue on the <a href="https://github.com/phuongtv-dev/jira-branch-extension" target="_blank">GitHub repository</a>.</p>
 
   <footer>
-    &copy; 2025 Jira Branch Generator &nbsp;·&nbsp;
+    &copy; 2026 Jira Branch Generator &nbsp;·&nbsp;
     <a href="https://github.com/phuongtv-dev/jira-branch-extension">GitHub</a>
   </footer>
 

@@ -27,19 +27,19 @@ Open a ticket, click the extension — sprint, parent, ticket ID and title are r
 
 **Fully customizable templates**
 Define your own branch format using variables:
-- `{sprint}` → s200
-- `{parent}` → LH-48141
-- `{ticket}` → LH-48913
+- `{sprint}` → s500
+- `{parent}` → PV-98912
+- `{ticket}` → PV-98913
 - `{slug}` → planning-system-implement-event-publisher
 - `{assignee}` → john-doe
 - `{label}`, `{component}`, `{type}`, `{priority}`
 
 **Smart segment dropping**
 Segments with empty variables are dropped automatically.
-`{sprint}/{parent}/{ticket}-{slug}` with no sprint → `LH-48141/LH-48913-planning-system-...`
+`{sprint}/{parent}/{ticket}-{slug}` with no sprint → `PV-98912/PV-98913-implement-event-...`
 
 **Base branch generation**
-When a parent ticket exists, optionally generate a base branch (`s200/LH-48141/base`) alongside the ticket branch — perfect for stacked PR workflows.
+When a parent ticket exists, optionally generate a base branch (`s500/PV-98912/base`) alongside the ticket branch — perfect for stacked PR workflows.
 
 **10 built-in presets**
 Including `feat/{ticket}-{slug}`, `fix/{ticket}-{slug}`, `{type}/{sprint}/{ticket}-{slug}`, and more.
@@ -51,7 +51,7 @@ Every detected field is shown in an editable card. Override anything before copy
 Your last 15 generated branches are saved locally so you can copy them again anytime.
 
 **Manual input**
-Not on a Jira page? Paste a ticket reference like `[LH-48913] Fix login timeout` and generate instantly.
+Not on a Jira page? Paste a ticket reference like `[PV-98913] Fix login timeout` and generate instantly.
 
 ---
 
@@ -66,19 +66,19 @@ This extension is 100% local. It does not collect, transmit, or share any data. 
 Template: `{sprint}/{parent}/{ticket}-{slug}`
 
 Input:
-- Sprint: 200
-- Parent: LH-48141
-- Ticket: LH-48913
-- Title: Planning System: Implement Event Publisher for Portal Integration
+- Sprint: 500
+- Parent: PV-98912
+- Ticket: PV-98913
+- Title: Implement Event Publisher for Portal Integration
 
 Output:
 ```
-s200/LH-48141/LH-48913-planning-system-implement-event-publisher-portal-integration
+s500/PV-98912/PV-98913-implement-event-publisher-portal-integration
 ```
 
 Base branch:
 ```
-s200/LH-48141/base
+s500/PV-98912/base
 ```
 
 ---

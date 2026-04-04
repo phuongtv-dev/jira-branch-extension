@@ -1,105 +1,195 @@
 # Deploy Checklist – Jira Branch Generator
 
-## Trước khi submit
+## Before Submitting
 
-- [ ] Tăng `version` trong `manifest.json` (hiện tại: `1.0.0`)
-- [ ] Thay `YOUR_USERNAME` trong `privacy-policy.html` và `store-description.md`
-- [ ] Chụp ít nhất 1 screenshot 1280×800 của popup đang chạy
-- [ ] Host `privacy-policy.html` lên GitHub Pages (xem hướng dẫn bên dưới)
-- [ ] Build đúng ZIP: `cd jira-branch-extension && zip -r ../extension.zip .`
+- [ ] Version bumped in `manifest.json` (current: `1.2.0`)
+- [ ] At least 1 screenshot at 1280×800 of the popup in action
+- [ ] `privacy-policy.html` hosted on GitHub Pages (see below)
+- [ ] ZIP built correctly: `cd jira-branch-extension && zip -r ../extension.zip .`
+- [ ] Reload extension locally and test all features before submitting
 
 ---
 
-## Host Privacy Policy lên GitHub Pages
+## Host Privacy Policy on GitHub Pages
 
 ```bash
-# 1. Tạo repo trên GitHub: jira-branch-extension
+# 1. Create repo on GitHub: jira-branch-extension
 git init
 git add .
 git commit -m "feat: initial release v1.0.0"
-git remote add origin https://github.com/YOUR_USERNAME/jira-branch-extension.git
+git remote add origin https://github.com/phuongtv-dev/jira-branch-extension.git
 git push -u origin main
 
-# 2. Copy privacy policy vào repo
+# 2. Copy privacy policy into /docs
 cp store-assets/privacy-policy.html docs/privacy-policy.html
 git add docs/
 git commit -m "docs: add privacy policy"
 git push
 
-# 3. Bật GitHub Pages
+# 3. Enable GitHub Pages
 # GitHub repo → Settings → Pages → Source: Deploy from branch → main → /docs
-# URL sẽ là: https://YOUR_USERNAME.github.io/jira-branch-extension/privacy-policy.html
+# URL: https://phuongtv-dev.github.io/jira-branch-extension/privacy-policy.html
 ```
 
 ---
 
 ## Chrome Web Store
 
-1. Vào https://chrome.google.com/webstore/devconsole
-2. Đăng ký developer account → trả $5 (một lần duy nhất)
-3. **New Item** → upload `extension.zip`
-4. Điền thông tin từ `store-description.md`:
-   - Name, Short description, Full description
-   - Category: **Developer Tools**
-   - Language: English (có thể thêm tiếng Việt sau)
-5. Upload screenshots (≥1 cái, 1280×800 hoặc 640×400)
-6. Điền Privacy Policy URL
-7. Mục **Permissions justification** — giải thích từng permission (copy từ store-description.md)
-8. Submit → chờ review 1–3 ngày
+1. Go to https://chrome.google.com/webstore/devconsole
+2. Register developer account → pay **$5 one-time fee**
+3. Click **New Item** → upload `extension.zip`
+4. Fill in store listing:
+   - **Name:** `Jira Branch Generator`
+   - **Short description:** `Auto-detect Jira ticket info and generate git branch names. Create branches on Bitbucket and GitHub in one click.`
+   - **Full description:** copy from `store-description.md`
+   - **Category:** Developer Tools
+   - **Language:** English
+5. Upload at least **1 screenshot** (1280×800 or 640×400)
+6. Fill in **Privacy Policy URL:**
+   `https://phuongtv-dev.github.io/jira-branch-extension/privacy-policy.html`
+7. **Data usage:** check *"This extension does not collect or use any user data"*
+8. **Permissions justification:**
+
+| Permission | Justification |
+|-----------|--------------|
+| `activeTab` | Read Jira ticket fields from the currently active tab |
+| `scripting` | Inject a content script to extract ticket fields from Jira DOM |
+| `storage` | Save branch templates, API tokens, and history locally on device |
+| `clipboardWrite` | Copy the generated branch name to clipboard |
+| `api.bitbucket.org` | Create branches via Bitbucket REST API when user clicks Create |
+| `api.github.com` | Create branches via GitHub REST API when user clicks Create |
+
+9. **No remote code:** select **No**
+10. Submit → review takes **1–3 business days**
 
 ---
 
-## Microsoft Edge Add-ons (miễn phí, làm sau Chrome)
+## Microsoft Edge Add-ons (free, do after Chrome)
 
-1. Vào https://partner.microsoft.com/dashboard
-2. Tạo tài khoản → **New Extension**
-3. Upload cùng file `extension.zip` (không cần sửa gì)
-4. Điền thông tin từ phần "Edge Add-ons" trong `store-description.md`
-5. Submit → chờ review 1–7 ngày
+1. Go to https://microsoftedge.microsoft.com/addons/signin
+2. Sign in with Microsoft account
+3. Click **Submit a new extension** → upload same `extension.zip` (no changes needed)
+4. Fill in:
+   - **Category:** Developer tools
+   - **Privacy policy URL:** same as Chrome
+   - **Short description:** copy from `store-description.md` → Edge section
+5. Upload screenshots
+6. Fill in **Notes for certification:**
+
+```
+This extension works on Jira Cloud (atlassian.net) pages.
+
+To test:
+1. Install the extension
+2. Open any Jira Cloud ticket
+3. Click the extension icon — ticket fields auto-detected
+4. Click ⎇ to create a branch on Bitbucket or GitHub
+   (requires API token setup in Bitbucket/GitHub tabs)
+
+No account or login required to test core branch generation.
+For Bitbucket: use the Bitbucket tab with an API token
+  (scopes: read:repository, write:repository, read:workspace)
+For GitHub: use the GitHub tab with a Personal Access Token
+  (scope: repo)
+```
+
+7. Submit → review takes **1–7 business days**
 
 ---
 
 ## Firefox AMO
 
-### Sửa code trước khi submit
+### Code changes required before submitting
 
-Thêm vào đầu `content.js` và `popup.js`:
+Add to the top of `content.js`, `popup.js`, and `background.js`:
 ```js
 const _browser = typeof browser !== 'undefined' ? browser : chrome;
 ```
 
-Thay toàn bộ `chrome.` → `_browser.` trong cả 2 file.
+Replace all `chrome.` → `_browser.` across all files.
 
-Hoặc dùng polyfill (khuyến khích):
+Or use the polyfill (recommended):
 ```bash
 npm install webextension-polyfill
-# copy node_modules/webextension-polyfill/dist/browser-polyfill.min.js vào folder extension
-# thêm vào manifest.json → content_scripts → js: ["browser-polyfill.min.js", "content.js"]
+# Copy to extension folder:
+cp node_modules/webextension-polyfill/dist/browser-polyfill.min.js jira-branch-extension/
+# Add to manifest.json content_scripts:
+# "js": ["browser-polyfill.min.js", "content.js"]
 ```
 
 ### Submit
-1. Vào https://addons.mozilla.org/developers
-2. **Submit a New Add-on** → upload ZIP đã sửa
-3. Điền thông tin từ phần "Firefox AMO" trong `store-description.md`
-4. Submit → review có thể mất vài ngày đến vài tuần
+1. Go to https://addons.mozilla.org/developers
+2. **Submit a New Add-on** → upload the modified ZIP
+3. Fill in listing from `store-description.md` → Firefox AMO section
+4. Submit → review may take a few days to several weeks
 
 ---
 
-## Update sau này
+## Releasing an Update
 
 ```bash
-# 1. Sửa code
-# 2. Tăng version trong manifest.json
-nano jira-branch-extension/manifest.json  # version: "1.0.1"
+# 1. Make your changes
 
-# 3. Build lại ZIP
-cd jira-branch-extension && zip -r ../extension-v1.0.1.zip .
+# 2. Bump version in manifest.json
+#    e.g. "version": "1.2.1"
 
-# 4. Push lên GitHub
+# 3. Update CHANGELOG.md
+
+# 4. Build ZIP
+cd jira-branch-extension && zip -r ../extension-v1.2.1.zip .
+
+# 5. Commit and tag
 git add .
-git commit -m "fix: improve sprint detection v1.0.1"
-git tag v1.0.1
+git commit -m "feat: v1.2.1 - description of changes"
+git tag v1.2.1
 git push origin main --tags
+# GitHub Actions will auto-build the release ZIP
 
-# 5. Upload ZIP mới lên từng store dashboard
+# 6. Upload new ZIP to each store dashboard
+#    Chrome: Package tab → Upload new package
+#    Edge: Update → upload new ZIP
 ```
+
+---
+
+## GitHub Actions Auto-build (optional)
+
+Create `.github/workflows/release.yml`:
+
+```yaml
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip extension
+        run: |
+          cd jira-branch-extension
+          zip -r ../jira-branch-extension.zip .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: jira-branch-extension.zip
+```
+
+Every `git tag v1.x.x && git push origin main --tags` auto-creates a GitHub Release with the ZIP attached.
+
+---
+
+## Store URLs
+
+| Store | URL |
+|-------|-----|
+| Chrome Web Store | https://chrome.google.com/webstore/detail/jira-branch-generator |
+| Edge Add-ons | https://microsoftedge.microsoft.com/addons/detail/jira-branch-generator |
+| GitHub Releases | https://github.com/phuongtv-dev/jira-branch-extension/releases |
+| Privacy Policy | https://phuongtv-dev.github.io/jira-branch-extension/privacy-policy.html |
