@@ -74,7 +74,6 @@ const bbUserCard    = $('bbUserCard');
 const bbAuthPanel   = $('bbAuthPanel');
 const bbAvatar      = $('bbAvatar');
 const bbUserName    = $('bbUserName');
-const bbAuthMethod  = $('bbAuthMethod');
 const bbLogoutBtn   = $('bbLogoutBtn');
 const bbUsername    = $('bbUsername');
 const bbAppPass     = $('bbAppPass');
@@ -85,20 +84,58 @@ const repoSelect    = $('repoSelect');
 const addFavBtn     = $('addFavBtn');
 const favList       = $('favList');
 
+// github
+const ghUserCard    = $('ghUserCard');
+const ghAuthPanel   = $('ghAuthPanel');
+const ghAvatar      = $('ghAvatar');
+const ghUserName    = $('ghUserName');
+const ghLogoutBtn   = $('ghLogoutBtn');
+const ghUsernameInp = $('ghUsername');
+const ghTokenInp    = $('ghToken');
+const ghSaveBtn     = $('ghSaveBtn');
+const ghFavsSection = $('ghFavsSection');
+const ghFavList     = $('ghFavList');
+const ghRepoInput   = $('ghRepoInput');
+const ghOrgSelect   = $('ghOrgSelect');
+const ghRepoSelect  = $('ghRepoSelect');
+const ghAddFavBtn   = $('ghAddFavBtn');
+const ghTab         = $('ghTab');
+
 // modal
-const modalOverlay  = $('modalOverlay');
-const modalBranchName=$('modalBranchName');
-const modalBody     = $('modalBody');
-const modalCancel   = $('modalCancel');
-const modalConfirm  = $('modalConfirm');
+const modalOverlay    = $('modalOverlay');
+const modalTitle      = $('modalTitle');
+const modalBranchName = $('modalBranchName');
+const modalBody       = $('modalBody');
+const modalCancel     = $('modalCancel');
+const modalConfirm    = $('modalConfirm');
 
 // history
 const histList      = $('histList');
 const clearBtn      = $('clearBtn');
 const toast         = $('toast');
+const themeBtn      = $('themeBtn');
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+themeBtn.addEventListener('click', async () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  await chrome.storage.local.set({ theme: next });
+});
+
+async function loadTheme() {
+  const { theme } = await chrome.storage.local.get('theme');
+  applyTheme(theme || 'dark');
+}
 
 // ── Init ───────────────────────────────────────────────────────────────────
 async function init() {
+  await loadTheme();
   buildFieldsGrid();
   setupTabs();
   setupVarPills();
@@ -107,6 +144,7 @@ async function init() {
   await renderHistory();
   await detectFromTab();
   await initBitbucket();
+  await initGitHub();
 }
 
 // ── Fields grid ────────────────────────────────────────────────────────────
@@ -141,6 +179,7 @@ function setupTabs() {
       $('page-'+tab.dataset.tab).classList.add('active');
       if (tab.dataset.tab==='history') renderHistory();
       if (tab.dataset.tab==='bitbucket') renderFavorites();
+      if (tab.dataset.tab==='github') renderGhFavorites();
     });
   });
 }
@@ -151,6 +190,7 @@ function switchToTab(name) {
   document.querySelector(`[data-tab="${name}"]`).classList.add('active');
   $('page-'+name).classList.add('active');
   if (name==='bitbucket') renderFavorites();
+  if (name==='github') renderGhFavorites();
 }
 
 // ── Detect from Jira tab ───────────────────────────────────────────────────
@@ -362,8 +402,7 @@ function showBBConnected() {
   bbAuthPanel.style.display   = 'none';
   bbUserCard.style.display    = '';
   bbFavsSection.style.display = 'flex';
-  bbAuthMethod.textContent    = '🔑 API Token';
-  bbTab.classList.add('bb-connected');
+  bbTab.classList.add("connected");
   loadBBUser();
   loadWorkspaces();
 }
@@ -371,7 +410,7 @@ function showBBDisconnected() {
   bbAuthPanel.style.display = '';
   bbUserCard.style.display  = 'none';
   bbFavsSection.style.display = 'none';
-  bbTab.classList.remove('bb-connected');
+  bbTab.classList.remove("connected");
   bbAvatar.src = ''; bbUserName.textContent='—';
 }
 
@@ -389,7 +428,8 @@ async function loadWorkspaces() {
     wsSelect.innerHTML='<option value="">Select workspace</option>';
     ws.forEach(w => {
       const o=document.createElement('option');
-      o.value=w.slug; o.textContent=w.name||w.slug;
+      o.value = w.slug || w.uuid;
+      o.textContent = w.name || w.slug || w.uuid;
       wsSelect.appendChild(o);
     });
   } catch(e) { wsSelect.innerHTML='<option value="">Error loading</option>'; }
@@ -456,42 +496,79 @@ bbLogoutBtn.addEventListener('click', async () => {
 // ── Create branch modal ────────────────────────────────────────────────────
 async function openModal(branchName) {
   if (!branchName) return;
-  const info = await bbIsLoggedIn().catch(()=>null);
-  if (!info?.loggedIn) {
+
+  const bbLoggedIn = await bbIsLoggedIn().catch(()=>null);
+  const ghLoggedIn = await ghIsLoggedIn().catch(()=>false);
+
+  if (!bbLoggedIn?.loggedIn && !ghLoggedIn) {
+    showToast('Connect Bitbucket or GitHub first');
     switchToTab('bitbucket');
-    showToast('Connect Bitbucket first');
     return;
   }
+
   state.pendingBranch = branchName;
   modalBranchName.textContent = branchName;
+  modalTitle.textContent = 'Create Branch';
   modalBody.innerHTML='';
   modalConfirm.disabled=false;
 
-  const favs = await getFavorites();
-  if (!favs.length) {
-    modalBody.innerHTML=`<div class="hint" style="padding:8px 0">No favorite repos. Add some in the <strong>Bitbucket</strong> tab.</div>`;
+  const bbFavs = bbLoggedIn?.loggedIn ? await getFavorites() : [];
+  const ghFavs = ghLoggedIn ? await ghGetFavorites() : [];
+
+  if (!bbFavs.length && !ghFavs.length) {
+    modalBody.innerHTML=`<div class="hint" style="padding:8px 0">No favorite repos. Add some in <strong>Bitbucket</strong> or <strong>GitHub</strong> tab.</div>`;
     modalConfirm.disabled=true;
   } else {
-    const lbl=document.createElement('div');
-    lbl.className='slbl'; lbl.style.marginBottom='6px'; lbl.textContent='Select repos';
-    modalBody.appendChild(lbl);
     const list=document.createElement('div'); list.className='repo-list';
-    favs.forEach(f => {
-      const item=document.createElement('div');
-      // Auto-select all repos by default
-      item.className='repo-item checked';
-      item.dataset.workspace=f.workspace; item.dataset.repo=f.repo;
-      item.innerHTML=`<div class="repo-check">✓</div><div><div class="repo-name">${esc(f.repo)}</div><div class="repo-ws">${esc(f.workspace)}</div></div>`;
-      item.addEventListener('click',()=>item.classList.toggle('checked'));
-      list.appendChild(item);
-    });
+
+    // Bitbucket repos
+    if (bbFavs.length) {
+      const lbl=document.createElement('div');
+      lbl.style.cssText='font-size:10px;color:var(--blue);font-weight:600;padding:2px 0;';
+      lbl.textContent='🪣 Bitbucket';
+      list.appendChild(lbl);
+      bbFavs.forEach(f => {
+        const item=document.createElement('div');
+        item.className='repo-item checked';
+        item.dataset.platform='bitbucket';
+        item.dataset.workspace=f.workspace;
+        item.dataset.repo=f.repo;
+        item.innerHTML=`<div class="repo-check">✓</div><div><div class="repo-name">${esc(f.repo)}</div><div class="repo-ws">${esc(f.workspace)}</div></div>`;
+        item.addEventListener('click',()=>item.classList.toggle('checked'));
+        list.appendChild(item);
+      });
+    }
+
+    // GitHub repos
+    if (ghFavs.length) {
+      const lbl=document.createElement('div');
+      lbl.style.cssText='font-size:10px;color:var(--green);font-weight:600;padding:6px 0 2px;';
+      lbl.textContent='🐙 GitHub';
+      list.appendChild(lbl);
+      ghFavs.forEach(f => {
+        const item=document.createElement('div');
+        item.className='repo-item checked';
+        item.dataset.platform='github';
+        item.dataset.owner=f.owner;
+        item.dataset.repo=f.repo;
+        item.dataset.key=f.key;
+        item.innerHTML=`<div class="repo-check">✓</div><div><div class="repo-name">${esc(f.repo)}</div><div class="repo-ws">${esc(f.owner)}</div></div>`;
+        item.addEventListener('click',()=>item.classList.toggle('checked'));
+        list.appendChild(item);
+      });
+    }
+
     modalBody.appendChild(list);
 
-    const hint=document.createElement('div');
-    hint.className='hint';
-    hint.style.marginTop='6px';
-    hint.textContent='Will branch from each repo\'s default branch automatically.';
-    modalBody.appendChild(hint);
+    // From branch input
+    const fromRow = document.createElement('div');
+    fromRow.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:4px;';
+    fromRow.innerHTML = `
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);">Branch from</div>
+      <input class="txt" type="text" id="fromBranchInput" placeholder="Leave empty to use default branch (main/master)" style="font-size:11px" />
+      <div class="hint">Leave empty → auto-detect each repo's default branch</div>
+    `;
+    modalBody.appendChild(fromRow);
   }
   modalOverlay.classList.add('show');
 }
@@ -503,8 +580,7 @@ function closeModal() { modalOverlay.classList.remove('show'); state.pendingBran
 modalConfirm.addEventListener('click', async () => {
   const selected=[...modalBody.querySelectorAll('.repo-item.checked')];
   if (!selected.length) { showToast('Select at least one repo'); return; }
-  // Pass null - background.js will auto-detect each repo's default branch
-  const fromBranch = null;
+  const fromBranch = ($('fromBranchInput')?.value.trim()) || null;
   modalConfirm.disabled=true;
   modalConfirm.innerHTML='<span class="spinner"></span> Creating…';
 
@@ -513,7 +589,13 @@ modalConfirm.addEventListener('click', async () => {
   modalBody.appendChild(resultsDiv);
 
   const results=await Promise.allSettled(
-    selected.map(item=>bbCreateBranch(item.dataset.workspace,item.dataset.repo,state.pendingBranch,fromBranch))
+    selected.map(item => {
+      if (item.dataset.platform === 'github') {
+        return ghCreateBranch(item.dataset.owner, item.dataset.repo, state.pendingBranch, fromBranch);
+      } else {
+        return bbCreateBranch(item.dataset.workspace, item.dataset.repo, state.pendingBranch, fromBranch);
+      }
+    })
   );
 
   resultsDiv.innerHTML='';
@@ -521,13 +603,17 @@ modalConfirm.addEventListener('click', async () => {
   results.forEach((r,i)=>{
     const item=selected[i];
     const el=document.createElement('div');
+    const repoLabel = item.dataset.platform==='github'
+      ? `${item.dataset.owner}/${item.dataset.repo}`
+      : `${item.dataset.workspace}/${item.dataset.repo}`;
+    const icon = item.dataset.platform==='github' ? '🐙' : '🪣';
     if (r.status==='fulfilled') {
       el.className='result-item ok';
-      el.innerHTML=`<span>✓</span><span class="ri-repo">${esc(item.dataset.workspace)}/${esc(item.dataset.repo)}</span>`;
+      el.innerHTML=`<span>✓</span><span class="ri-repo">${icon} ${esc(repoLabel)}</span>`;
     } else {
       allOk=false;
       el.className='result-item err';
-      el.innerHTML=`<span>✗</span><span class="ri-repo">${esc(item.dataset.workspace)}/${esc(item.dataset.repo)}</span><span style="font-size:10px;margin-left:4px">${esc(r.reason?.message||'Error')}</span>`;
+      el.innerHTML=`<span>✗</span><span class="ri-repo">${icon} ${esc(repoLabel)}</span><span style="font-size:10px;margin-left:4px">${esc(r.reason?.message||'Error')}</span>`;
     }
     resultsDiv.appendChild(el);
   });
@@ -535,6 +621,148 @@ modalConfirm.addEventListener('click', async () => {
   modalConfirm.innerHTML='Done'; modalConfirm.disabled=false;
   if (allOk) { saveHistory(state.pendingBranch).then(renderHistory); setTimeout(closeModal,1500); }
 });
+
+// ── GitHub ─────────────────────────────────────────────────────────────────
+async function initGitHub() {
+  const loggedIn = await ghIsLoggedIn();
+  if (loggedIn) showGhConnected();
+}
+
+function showGhConnected() {
+  ghAuthPanel.style.display   = 'none';
+  ghUserCard.style.display    = '';
+  ghFavsSection.style.display = 'flex';
+  ghTab.classList.add("gh-connected");
+  loadGhUser();
+  loadGhOrgs();
+}
+function showGhDisconnected() {
+  ghAuthPanel.style.display   = '';
+  ghUserCard.style.display    = 'none';
+  ghFavsSection.style.display = 'none';
+  ghTab.classList.remove("gh-connected");
+  ghAvatar.src=''; ghUserName.textContent='—';
+}
+
+async function loadGhUser() {
+  try {
+    const { gh_token } = await chrome.storage.local.get('gh_token');
+    if (!gh_token) return;
+    const resp = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': `Bearer ${gh_token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (resp.ok) {
+      const user = await resp.json();
+      ghUserName.textContent = user.login || '—';
+      if (user.avatar_url) ghAvatar.src = user.avatar_url;
+    }
+  } catch(e) {}
+}
+
+async function loadGhOrgs() {
+  try {
+    ghOrgSelect.innerHTML = '<option value="">Loading…</option>';
+    const orgs = await ghGetOrgs();
+    ghOrgSelect.innerHTML = '<option value="">Select account/org</option>';
+    orgs.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.login;
+      opt.textContent = o.login + (o.type === 'Organization' ? ' (org)' : ' (you)');
+      ghOrgSelect.appendChild(opt);
+    });
+  } catch(e) {
+    ghOrgSelect.innerHTML = '<option value="">Error loading</option>';
+  }
+}
+
+ghSaveBtn.addEventListener('click', async () => {
+  const t = ghTokenInp.value.trim();
+  const u = ghUsernameInp.value.trim();
+  if (!t) { flash(ghTokenInp); return; }
+  ghSaveBtn.disabled=true;
+  ghSaveBtn.innerHTML='<span class="spinner"></span> Verifying…';
+  try {
+    await ghLogin(u, t);
+    showGhConnected();
+    renderGhFavorites();
+    showToast('✓ Connected to GitHub!');
+    ghUsernameInp.value=''; ghTokenInp.value='';
+  } catch(e) {
+    showToast(e.message, true);
+    flash(ghTokenInp);
+  } finally {
+    ghSaveBtn.disabled=false;
+    ghSaveBtn.innerHTML='🔗 Save & Connect';
+  }
+});
+
+ghLogoutBtn.addEventListener('click', async () => {
+  await ghClearToken();
+  showGhDisconnected();
+  showToast('Disconnected from GitHub');
+});
+
+ghOrgSelect.addEventListener('change', async () => {
+  const org = ghOrgSelect.value;
+  ghRepoSelect.innerHTML = '<option value="">Loading…</option>';
+  if (!org) { ghRepoSelect.innerHTML = '<option value="">Select account first</option>'; return; }
+  try {
+    const repos = await ghGetRepos(org);
+    ghRepoSelect.innerHTML = '<option value="">Select repo</option>';
+    repos.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.name;
+      opt.textContent = r.name + (r.private ? ' 🔒' : '');
+      ghRepoSelect.appendChild(opt);
+    });
+  } catch(e) {
+    ghRepoSelect.innerHTML = '<option value="">Error loading</option>';
+  }
+});
+
+ghAddFavBtn.addEventListener('click', async () => {
+  // Try dropdown first, fall back to manual input
+  const org  = ghOrgSelect?.value;
+  const repo = ghRepoSelect?.value;
+  const manual = ghRepoInput?.value.trim();
+
+  const val = (org && repo) ? `${org}/${repo}` : manual;
+  if (!val || !val.includes('/')) {
+    showToast('Select a repo or type owner/repo', true);
+    return;
+  }
+  ghAddFavBtn.disabled=true;
+  ghAddFavBtn.textContent='Checking…';
+  try {
+    await ghAddFavorite(val);
+    if (ghRepoInput) ghRepoInput.value='';
+    renderGhFavorites();
+    showToast('★ Added!');
+  } catch(e) {
+    showToast(e.message, true);
+  } finally {
+    ghAddFavBtn.disabled=false;
+    ghAddFavBtn.textContent='★ Add to favorites';
+  }
+});
+
+async function renderGhFavorites() {
+  const favs = await ghGetFavorites();
+  ghFavList.innerHTML='';
+  if (!favs.length) {
+    ghFavList.innerHTML='<div class="hint" style="padding:4px 0">No favorites yet.</div>';
+    return;
+  }
+  favs.forEach(f => {
+    const el=document.createElement('div');
+    el.className='fav-item';
+    el.innerHTML=`<span class="fi-name">${esc(f.key)}</span><button class="fi-del">×</button>`;
+    el.querySelector('.fi-del').addEventListener('click', async () => {
+      await ghRemoveFavorite(f.key); renderGhFavorites();
+    });
+    ghFavList.appendChild(el);
+  });
+}
 
 // ── History ────────────────────────────────────────────────────────────────
 async function saveHistory(b) {

@@ -25,7 +25,8 @@ async function getAuthHeader() {
 
 async function doAppPasswordLogin(username, password) {
   const creds = btoa(`${username}:${password}`);
-  const resp  = await fetch(`${BB_API}/repositories?role=member&pagelen=1`, {
+  // Use new /user/workspaces endpoint (replaces deprecated /repositories?role=member)
+  const resp = await fetch(`${BB_API}/user/workspaces?pagelen=1`, {
     headers: { 'Authorization': `Basic ${creds}` }
   });
   if (!resp.ok) {
@@ -96,13 +97,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
 
         case 'bb_get_workspaces': {
-          const data = await bbApi('/repositories?role=member&pagelen=100');
-          const wsMap = {};
-          (data.values || []).forEach(r => {
-            const ws = r.workspace;
-            if (ws && !wsMap[ws.slug]) wsMap[ws.slug] = ws;
-          });
-          sendResponse({ ok: true, data: Object.values(wsMap) });
+          // Paginate through all workspaces
+          let workspaces = [];
+          let url = `${BB_API}/user/workspaces?pagelen=50`;
+          while (url) {
+            const authHeader = await getAuthHeader();
+            const resp = await fetch(url, {
+              headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
+            });
+            if (!resp.ok) break;
+            const data = await resp.json();
+            const items = (data.values || []).map(v => v.workspace || v).filter(Boolean);
+            workspaces = workspaces.concat(items);
+            url = data.next || null; // follow pagination
+          }
+          sendResponse({ ok: true, data: workspaces });
           break;
         }
 
@@ -113,14 +122,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
 
         case 'bb_create_branch': {
-          const { workspace, repo, branchName } = msg;
+          const { workspace, repo, branchName, fromBranch } = msg;
 
-          // Auto-detect default branch
           let commitHash;
           try {
-            const repoInfo     = await bbApi(`/repositories/${workspace}/${repo}`);
-            const defaultBranch = repoInfo.mainbranch?.name || 'master';
-            const branchInfo   = await bbApi(`/repositories/${workspace}/${repo}/refs/branches/${encodeURIComponent(defaultBranch)}`);
+            // Use specified branch or auto-detect default
+            const sourceBranch = fromBranch || (await bbApi(`/repositories/${workspace}/${repo}`)).mainbranch?.name || 'master';
+            const branchInfo = await bbApi(`/repositories/${workspace}/${repo}/refs/branches/${encodeURIComponent(sourceBranch)}`);
             commitHash = branchInfo.target?.hash;
           } catch(e) {
             const commits = await bbApi(`/repositories/${workspace}/${repo}/commits?pagelen=1`);

@@ -1,274 +1,650 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <title>Jira Branch Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
-
+    /* ── Theme tokens ─────────────────────────────────────────────── */
     :root {
-      --bg:      #0d0d14;
-      --s1:      #15151f;
-      --s2:      #1c1c2a;
-      --bd:      #28283e;
-      --bd2:     #35355a;
-      --acc:     #7c6af7;
-      --acc2:    #a78bfa;
-      --glow:    rgba(124,106,247,.2);
-      --green:   #4ade80;
-      --gbg:     rgba(74,222,128,.1);
-      --orange:  #fb923c;
-      --blue:    #38bdf8;
-      --yellow:  #fbbf24;
-      --pink:    #f472b6;
-      --teal:    #2dd4bf;
-      --lime:    #a3e635;
-      --red:     #f87171;
-      --tx:      #e2e2f0;
-      --txd:     #9898b8;
-      --txm:     #6b6b88;
-      --mono:    'JetBrains Mono', monospace;
-      --sans:    'DM Sans', sans-serif;
-      --r:       8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { width: 430px; background: var(--bg); color: var(--tx); font-family: var(--sans); font-size: 13px; }
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-ui:   'Geist', sans-serif;
+      --radius:    6px;
+      --radius-lg: 10px;
 
-    /* Header */
-    .hdr { padding: 11px 14px; background: var(--s1); border-bottom: 1px solid var(--bd); display: flex; align-items: center; gap: 10px; }
-    .logo { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; background: linear-gradient(135deg,#7c6af7,#a855f7); display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 0 10px var(--glow); }
-    .hdr h1 { font-size: 13px; font-weight: 600; }
-    .hdr p  { font-size: 10px; color: var(--txm); }
-    .status { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--txm); }
-    .dot    { width: 6px; height: 6px; border-radius: 50%; background: var(--txm); flex-shrink: 0; }
-    .dot.on  { background: var(--green); box-shadow: 0 0 5px var(--green); }
+      /* Transition */
+      --t: 160ms ease;
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0b0d0f;
+      --bg1:      #111416;
+      --bg2:      #181b1e;
+      --bg3:      #1e2124;
+      --border:   #272b2f;
+      --border2:  #333840;
+
+      --tx:       #e8ecef;
+      --tx2:      #8c9299;
+      --tx3:      #4d5359;
+
+      --acc:      #00d4aa;   /* teal */
+      --acc2:     #00b894;
+      --acc-bg:   rgba(0,212,170,.1);
+      --acc-bd:   rgba(0,212,170,.25);
+
+      --blue:     #4db8ff;
+      --orange:   #ffaa44;
+      --pink:     #ff7eb3;
+      --lime:     #aadd66;
+      --yellow:   #ffd166;
+      --red:      #ff5566;
+      --green:    #44dd88;
+      --green-bg: rgba(68,221,136,.1);
+
+      --shadow:   0 1px 3px rgba(0,0,0,.4);
+    }
+
+    [data-theme="light"] {
+      --bg:       #f5f3ef;
+      --bg1:      #eceae5;
+      --bg2:      #e4e1db;
+      --bg3:      #dbd8d1;
+      --border:   #ccc9c2;
+      --border2:  #b8b4ac;
+
+      --tx:       #1a1a18;
+      --tx2:      #6b6860;
+      --tx3:      #a09c94;
+
+      --acc:      #007a62;
+      --acc2:     #006652;
+      --acc-bg:   rgba(0,122,98,.08);
+      --acc-bd:   rgba(0,122,98,.2);
+
+      --blue:     #1a6eb5;
+      --orange:   #c47800;
+      --pink:     #c43b75;
+      --lime:     #5a8a1a;
+      --yellow:   #a06800;
+      --red:      #cc2233;
+      --green:    #1a7a44;
+      --green-bg: rgba(26,122,68,.08);
+
+      --shadow:   0 1px 3px rgba(0,0,0,.12);
+    }
+
+    /* ── Reset ────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 440px;
+      background: var(--bg);
+      color: var(--tx);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      line-height: 1.5;
+      transition: background var(--t), color var(--t);
+    }
+
+    /* ── Header ───────────────────────────────────────────────────── */
+    .hdr {
+      padding: 10px 14px;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #7c6af7, #a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(124,106,247,.3);
+      color: #fff;
+    }
+
+    .hdr-title { flex: 1; }
+    .hdr-title h1 { font-size: 13px; font-weight: 600; letter-spacing: -.01em; }
+    .hdr-title p  { font-size: 10px; color: var(--tx2); font-family: var(--font-mono); }
+
+    .hdr-actions { display: flex; align-items: center; gap: 6px; }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10px; color: var(--tx2);
+      font-family: var(--font-mono);
+    }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--tx3); flex-shrink: 0;
+      transition: background var(--t), box-shadow var(--t);
+    }
+    .dot.on  { background: var(--green); box-shadow: 0 0 6px var(--green); }
     .dot.err { background: var(--red); }
 
-    /* Tabs */
-    .tabs { display: flex; background: var(--s1); border-bottom: 1px solid var(--bd); }
-    .tab  { flex: 1; padding: 8px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; color: var(--txm); border-bottom: 2px solid transparent; transition: all .15s; user-select: none; }
-    .tab.active { color: var(--acc2); border-bottom-color: var(--acc); }
-    .tab:hover:not(.active) { color: var(--txd); }
-    .tab.bb-connected { color: var(--blue) !important; }
+    /* Theme toggle */
+    .theme-btn {
+      width: 28px; height: 28px;
+      border-radius: var(--radius);
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--tx2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      transition: all var(--t);
+    }
+    .theme-btn:hover { border-color: var(--acc); color: var(--acc); }
 
-    /* Pages */
+    /* ── Tabs ─────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 6px;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      color: var(--tx2);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: all var(--t);
+      user-select: none;
+    }
+    .tab:hover:not(.active) { color: var(--tx); }
+    .tab.active { color: var(--acc); border-bottom-color: var(--acc); font-weight: 600; }
+    .tab.connected { color: var(--blue) !important; }
+    .tab.gh-connected { color: var(--green) !important; }
+
+    /* ── Pages ────────────────────────────────────────────────────── */
     .page { display: none; padding: 12px 14px; flex-direction: column; gap: 10px; }
     .page.active { display: flex; }
 
-    /* Section label */
-    .slbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--txm); display: flex; align-items: center; gap: 6px; }
-    .slbl::after { content:''; flex:1; height:1px; background:var(--bd); }
+    /* ── Section label ────────────────────────────────────────────── */
+    .slbl {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--tx3);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .slbl::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    /* Fields grid */
-    .fields-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
-    .field-card  { display: flex; flex-direction: column; background: var(--s1); border: 1px solid var(--bd); border-radius: var(--r); padding: 6px 8px; min-width: 0; transition: border-color .12s; }
-    .field-card:focus-within { border-color: var(--bd2); background: var(--s2); }
-    .field-card.empty { opacity: .45; }
-    .field-card.wide  { grid-column: 1/-1; }
-    .fc-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--txm); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
-    .fc-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-    .field-card input { background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--tx); width: 100%; padding: 0; }
-    .fc-sprint input { color: var(--orange); } .fc-sprint .fc-dot { background: var(--orange); }
-    .fc-parent input { color: var(--blue); }   .fc-parent .fc-dot { background: var(--blue); }
-    .fc-ticket input { color: var(--acc2); }   .fc-ticket .fc-dot { background: var(--acc2); }
-    .fc-assignee input { color: var(--pink); } .fc-assignee .fc-dot { background: var(--pink); }
-    .fc-label input { color: var(--teal); }    .fc-label .fc-dot { background: var(--teal); }
-    .fc-component input { color: var(--lime); }.fc-component .fc-dot { background: var(--lime); }
-    .fc-type input { color: var(--yellow); }   .fc-type .fc-dot { background: var(--yellow); }
-    .fc-priority input { color: var(--red); }  .fc-priority .fc-dot { background: var(--red); }
-    .fc-title input { color: var(--txd); font-size: 10.5px; }
+    /* ── Fields grid ──────────────────────────────────────────────── */
+    .fields-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
 
-    /* Branch box */
-    .branch-wrap { display:none; flex-direction:column; gap:5px; }
-    .branch-wrap.show { display:flex; }
-    .branch-row  { display: flex; flex-direction: column; gap: 4px; }
-    .branch-box  { background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:8px 10px; display:flex; align-items:center; gap:6px; cursor:pointer; transition:border-color .15s,background .15s; }
-    .branch-box:hover  { border-color:var(--acc); background:var(--s2); }
-    .branch-box.copied { border-color:var(--green); background:var(--gbg); }
-    .branch-name { font-family:var(--mono); font-size:11px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .btn-group   { display:flex; gap:4px; flex-shrink:0; }
-    .icon-btn    { width:26px; height:26px; border-radius:6px; background:transparent; border:1px solid var(--bd); color:var(--txm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; transition:all .15s; }
-    .icon-btn:hover { border-color:var(--acc); color:var(--acc2); }
-    .icon-btn.create-btn:hover { border-color:var(--green); color:var(--green); }
+    .field-card {
+      display: flex; flex-direction: column;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 8px;
+      min-width: 0;
+      transition: border-color var(--t), background var(--t);
+    }
+    .field-card:focus-within { border-color: var(--border2); background: var(--bg2); }
+    .field-card.empty { opacity: .4; }
+    .field-card.wide { grid-column: 1 / -1; }
 
-    /* base branch */
-    .base-row { display:none; flex-direction:column; gap:3px; margin-top:1px; }
-    .base-row.show { display:flex; }
-    .base-lbl { font-size:9px; color:var(--txm); display:flex; align-items:center; gap:5px; padding:0 2px; }
-    .base-chip { margin-left:auto; display:flex; align-items:center; gap:4px; background:var(--s1); border:1px solid var(--bd); border-radius:5px; padding:2px 7px; font-size:9px; color:var(--txm); cursor:pointer; user-select:none; }
-    .base-chip input { display:none; }
-    .base-chip.on { border-color:var(--acc); color:var(--acc2); }
+    .fc-lbl {
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--tx3);
+      margin-bottom: 2px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .fc-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
 
-    /* segment colours */
-    .t-sprint { color:var(--orange); } .t-parent { color:var(--blue); }
-    .t-ticket { color:var(--acc2); font-weight:600; } .t-slug { color:var(--txd); }
-    .t-assignee { color:var(--pink); } .t-label { color:var(--teal); }
-    .t-component { color:var(--lime); } .t-type { color:var(--yellow); }
-    .t-priority { color:var(--red); } .t-sep { color:var(--txm); } .t-raw { color:var(--txd); }
+    .field-card input {
+      background: transparent; border: none; outline: none;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+      color: var(--tx); width: 100%; padding: 0;
+    }
 
-    /* Chips */
-    .chips { display:flex; flex-wrap:wrap; gap:5px; }
-    .chip  { display:flex; align-items:center; gap:4px; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:4px 8px; font-size:10px; color:var(--txm); cursor:pointer; user-select:none; transition:all .12s; }
-    .chip input { display:none; }
-    .chip.on { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
+    /* Field colours - only text colour, dot colour */
+    .fc-sprint input { color: var(--orange); }
+    .fc-parent input { color: var(--blue); }
+    .fc-ticket input { color: var(--acc); }
+    .fc-assignee input { color: var(--pink); }
+    .fc-label input { color: var(--acc); }
+    .fc-component input { color: var(--lime); }
+    .fc-type input { color: var(--yellow); }
+    .fc-priority input { color: var(--red); }
+    .fc-title input { color: var(--tx2); font-size: 10.5px; }
 
-    /* Inputs */
-    .row { display:flex; gap:6px; }
-    input.txt { flex:1; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:7px 10px; font-family:var(--mono); font-size:11px; color:var(--tx); outline:none; transition:border-color .15s; }
-    input.txt::placeholder { color:var(--txm); }
-    input.txt:focus { border-color:var(--acc); }
-    input.txt.err { border-color:var(--red); }
-    .gen-btn { background:linear-gradient(135deg,var(--acc),#a855f7); border:none; border-radius:var(--r); padding:7px 13px; color:#fff; font-family:var(--sans); font-size:11px; font-weight:600; cursor:pointer; transition:opacity .15s,transform .1s; white-space:nowrap; }
-    .gen-btn:hover { opacity:.9; } .gen-btn:active { transform:scale(.97); }
-    .hint { font-size:10px; color:var(--txm); }
+    .fc-sprint .fc-dot   { background: var(--orange); }
+    .fc-parent .fc-dot   { background: var(--blue); }
+    .fc-ticket .fc-dot   { background: var(--acc); }
+    .fc-assignee .fc-dot { background: var(--pink); }
+    .fc-label .fc-dot    { background: var(--acc); }
+    .fc-component .fc-dot{ background: var(--lime); }
+    .fc-type .fc-dot     { background: var(--yellow); }
+    .fc-priority .fc-dot { background: var(--red); }
+    .fc-title .fc-dot    { background: var(--tx3); }
 
-    /* Template page */
-    .preset-list { display:flex; flex-direction:column; gap:4px; }
-    .preset-item { display:flex; align-items:center; gap:6px; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:6px 10px; }
-    .preset-item.active { border-color:var(--acc); background:rgba(124,106,247,.08); }
-    .preset-item .pi-tpl  { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .preset-item.active .pi-tpl { color:var(--acc2); }
-    .preset-item .pi-name { font-size:10px; color:var(--txm); flex-shrink:0; }
-    .preset-item .pi-del  { width:20px; height:20px; border-radius:4px; background:transparent; border:none; color:var(--txm); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    .preset-item .pi-del:hover { color:var(--red); }
-    .add-preset-row { display:flex; gap:5px; }
-    .add-name { width:90px; flex-shrink:0; }
-    .var-grid { display:flex; flex-wrap:wrap; gap:5px; }
-    .vp { font-family:var(--mono); font-size:10px; border-radius:5px; padding:3px 8px; cursor:pointer; border:1px solid; user-select:none; }
-    .vp:hover { opacity:.75; }
-    .vp.sprint    { color:var(--orange); border-color:rgba(251,146,60,.35);  background:rgba(251,146,60,.08); }
-    .vp.parent    { color:var(--blue);   border-color:rgba(56,189,248,.35);  background:rgba(56,189,248,.08); }
-    .vp.ticket    { color:var(--acc2);   border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.08); }
-    .vp.slug      { color:var(--txd);    border-color:var(--bd);             background:var(--s1); }
-    .vp.title     { color:var(--txd);    border-color:var(--bd);             background:var(--s1); }
-    .vp.assignee  { color:var(--pink);   border-color:rgba(244,114,182,.35); background:rgba(244,114,182,.08); }
-    .vp.label     { color:var(--teal);   border-color:rgba(45,212,191,.35);  background:rgba(45,212,191,.08); }
-    .vp.component { color:var(--lime);   border-color:rgba(163,230,53,.35);  background:rgba(163,230,53,.08); }
-    .vp.type      { color:var(--yellow); border-color:rgba(251,191,36,.35);  background:rgba(251,191,36,.08); }
-    .vp.priority  { color:var(--red);    border-color:rgba(248,113,113,.35); background:rgba(248,113,113,.08); }
+    /* ── Branch output ────────────────────────────────────────────── */
+    .branch-wrap { display: none; flex-direction: column; gap: 5px; }
+    .branch-wrap.show { display: flex; }
 
-    /* ── Bitbucket page ── */
-    .bb-wrap { display:flex; flex-direction:column; gap:12px; }
+    .branch-box {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 11px;
+      display: flex; align-items: center; gap: 7px;
+      cursor: pointer;
+      transition: border-color var(--t), background var(--t);
+    }
+    .branch-box:hover  { border-color: var(--acc); background: var(--bg2); }
+    .branch-box.copied { border-color: var(--green); background: var(--green-bg); }
 
-    /* Auth method tabs */
-    .auth-tabs { display:flex; gap:6px; }
-    .auth-tab  { flex:1; padding:7px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); font-size:11px; font-weight:600; text-align:center; cursor:pointer; color:var(--txm); transition:all .15s; user-select:none; }
-    .auth-tab.active { border-color:var(--acc); color:var(--acc2); background:rgba(124,106,247,.1); }
+    .branch-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
 
-    /* OAuth panel */
-    .oauth-panel, .apppass-panel { display:none; flex-direction:column; gap:10px; }
-    .oauth-panel.show, .apppass-panel.show { display:flex; }
+    /* Segment colours */
+    .t-sprint   { color: var(--orange); }
+    .t-parent   { color: var(--blue); }
+    .t-ticket   { color: var(--acc); font-weight: 600; }
+    .t-slug     { color: var(--tx2); }
+    .t-assignee { color: var(--pink); }
+    .t-label    { color: var(--acc); }
+    .t-component{ color: var(--lime); }
+    .t-type     { color: var(--yellow); }
+    .t-priority { color: var(--red); }
+    .t-sep      { color: var(--tx3); }
+    .t-raw      { color: var(--tx2); }
 
-    .bb-connect-box { display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); text-align:center; }
-    .bb-connect-box p { font-size:11px; color:var(--txm); line-height:1.5; }
-    .bb-btn { background:#0052cc; border:none; border-radius:var(--r); padding:8px 16px; color:#fff; font-family:var(--sans); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:opacity .15s; }
-    .bb-btn:hover { opacity:.85; }
-    .bb-btn:disabled { opacity:.5; cursor:not-allowed; }
+    /* ── Button group ─────────────────────────────────────────────── */
+    .btn-group { display: flex; gap: 4px; flex-shrink: 0; }
 
-    /* App password panel */
-    .apppass-form { display:flex; flex-direction:column; gap:7px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:12px; }
-    .apppass-form label { font-size:10px; color:var(--txm); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
-    .apppass-form .hint a { color:var(--acc2); text-decoration:none; }
-    .apppass-form .hint a:hover { text-decoration:underline; }
+    .icon-btn {
+      width: 26px; height: 26px;
+      border-radius: var(--radius);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--tx2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      transition: all var(--t);
+    }
+    .icon-btn:hover          { border-color: var(--acc);   color: var(--acc); }
+    .icon-btn.create-btn:hover { border-color: var(--green); color: var(--green); }
+    .branch-box.copied .icon-btn { border-color: var(--green); color: var(--green); }
+
+    /* ── Base branch row ──────────────────────────────────────────── */
+    .base-row { display: none; flex-direction: column; gap: 3px; }
+    .base-row.show { display: flex; }
+    .base-lbl {
+      font-size: 9px; color: var(--tx2);
+      display: flex; align-items: center; gap: 5px; padding: 0 2px;
+    }
+    .base-chip {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 4px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 7px;
+      font-size: 9px; color: var(--tx2);
+      cursor: pointer; user-select: none;
+      transition: all var(--t);
+    }
+    .base-chip input { display: none; }
+    .base-chip.on { border-color: var(--acc-bd); color: var(--acc); background: var(--acc-bg); }
+
+    /* ── Chips ────────────────────────────────────────────────────── */
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .chip {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 4px 9px;
+      font-size: 10px; color: var(--tx2);
+      cursor: pointer; user-select: none;
+      transition: all var(--t);
+    }
+    .chip input { display: none; }
+    .chip.on { border-color: var(--acc-bd); color: var(--acc); background: var(--acc-bg); }
+
+    /* ── Inputs ───────────────────────────────────────────────────── */
+    .row { display: flex; gap: 6px; }
+
+    input.txt {
+      flex: 1;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 10px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--tx); outline: none;
+      transition: border-color var(--t), background var(--t);
+    }
+    input.txt::placeholder { color: var(--tx3); }
+    input.txt:focus { border-color: var(--border2); background: var(--bg2); }
+    input.txt.err { border-color: var(--red); }
+
+    select.sel {
+      flex: 1;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 10px;
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--tx); outline: none;
+      transition: border-color var(--t);
+    }
+    select.sel:focus { border-color: var(--border2); }
+
+    .hint { font-size: 10px; color: var(--tx2); line-height: 1.5; }
+    .hint a, .guide-step a { color: var(--acc); text-decoration: none; }
+    .hint a:hover, .guide-step a:hover { text-decoration: underline; }
+
+    /* ── Buttons ──────────────────────────────────────────────────── */
+    .btn-primary {
+      background: var(--acc);
+      color: var(--bg);
+      border: none; border-radius: var(--radius);
+      padding: 7px 14px;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity var(--t), transform 100ms;
+    }
+    .btn-primary:hover { opacity: .88; }
+    .btn-primary:active { transform: scale(.97); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 12px;
+      font-family: var(--font-ui); font-size: 11px; font-weight: 500;
+      color: var(--tx2); cursor: pointer; white-space: nowrap;
+      transition: all var(--t);
+    }
+    .btn-secondary:hover { border-color: var(--border2); color: var(--tx); }
+    .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
+
+    .btn-danger {
+      background: transparent; border: 1px solid var(--red);
+      border-radius: var(--radius); padding: 5px 10px;
+      font-size: 10px; color: var(--red); cursor: pointer;
+      transition: all var(--t);
+    }
+    .btn-danger:hover { background: rgba(255,85,102,.1); }
+
+    /* ── Template page ────────────────────────────────────────────── */
+    .preset-list { display: flex; flex-direction: column; gap: 4px; }
+    .preset-item {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 10px;
+      transition: border-color var(--t);
+    }
+    .preset-item.active { border-color: var(--acc-bd); background: var(--acc-bg); }
+    .preset-item .pi-tpl {
+      font-family: var(--font-mono); font-size: 11px; color: var(--tx2);
+      flex: 1; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .preset-item.active .pi-tpl { color: var(--acc); }
+    .preset-item .pi-name { font-size: 10px; color: var(--tx3); flex-shrink: 0; }
+    .preset-item .pi-del {
+      width: 18px; height: 18px; border-radius: 4px;
+      background: transparent; border: none; color: var(--tx3);
+      cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+    }
+    .preset-item .pi-del:hover { color: var(--red); }
+
+    .add-preset-row { display: flex; gap: 5px; }
+    .add-name { width: 90px; flex-shrink: 0; }
+
+    .var-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .vp {
+      font-family: var(--font-mono); font-size: 10px;
+      border-radius: 4px; padding: 3px 7px;
+      cursor: pointer; border: 1px solid; user-select: none;
+      transition: opacity var(--t);
+    }
+    .vp:hover { opacity: .7; }
+    .vp.sprint   { color: var(--orange); border-color: rgba(255,170,68,.3); background: rgba(255,170,68,.07); }
+    .vp.parent   { color: var(--blue);   border-color: rgba(77,184,255,.3); background: rgba(77,184,255,.07); }
+    .vp.ticket   { color: var(--acc);    border-color: var(--acc-bd);       background: var(--acc-bg); }
+    .vp.slug     { color: var(--tx2);    border-color: var(--border);       background: var(--bg2); }
+    .vp.title    { color: var(--tx2);    border-color: var(--border);       background: var(--bg2); }
+    .vp.assignee { color: var(--pink);   border-color: rgba(255,126,179,.3);background: rgba(255,126,179,.07); }
+    .vp.label    { color: var(--acc);    border-color: var(--acc-bd);       background: var(--acc-bg); }
+    .vp.component{ color: var(--lime);   border-color: rgba(170,221,102,.3);background: rgba(170,221,102,.07); }
+    .vp.type     { color: var(--yellow); border-color: rgba(255,209,102,.3);background: rgba(255,209,102,.07); }
+    .vp.priority { color: var(--red);    border-color: rgba(255,85,102,.3); background: rgba(255,85,102,.07); }
+
+    /* ── Service connect card ─────────────────────────────────────── */
+    .service-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 10px 12px;
+    }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bg3); flex-shrink: 0; object-fit: cover;
+    }
+    .user-info { flex: 1; }
+    .user-info .name  { font-size: 12px; font-weight: 600; }
+    .user-info .badge { font-size: 9px; color: var(--tx2); font-family: var(--font-mono); }
+
+    /* Auth form */
+    .auth-form {
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 12px;
+    }
 
     /* Guide box */
-    .guide-box   { background:var(--s2); border:1px solid var(--bd); border-left:3px solid var(--blue); border-radius:var(--r); padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
-    .guide-title { font-size:11px; font-weight:600; color:var(--blue); }
-    .guide-steps { display:flex; flex-direction:column; gap:6px; }
-    .guide-step  { display:flex; align-items:flex-start; gap:8px; font-size:10.5px; color:var(--txd); line-height:1.5; }
-    .step-num    { background:var(--blue); color:#071a2e; width:16px; height:16px; border-radius:50%; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
-    .guide-step a    { color:var(--acc2); text-decoration:none; }
-    .guide-step a:hover { text-decoration:underline; }
-    .guide-step strong { color:var(--tx); }
-    .guide-step em   { color:var(--txm); font-style:normal; }
-    .guide-link  { font-size:10px; color:var(--blue); text-decoration:none; font-weight:600; }
-    .guide-link:hover { text-decoration:underline; }
-    .save-btn { background:linear-gradient(135deg,var(--acc),#a855f7); border:none; border-radius:var(--r); padding:7px; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:opacity .15s; }
-    .save-btn:hover { opacity:.9; }
-    .save-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .guide-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-left: 3px solid var(--blue);
+      border-radius: var(--radius); padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .guide-title { font-size: 11px; font-weight: 600; color: var(--blue); }
+    .guide-steps { display: flex; flex-direction: column; gap: 7px; }
+    .guide-step  {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 10.5px; color: var(--tx2); line-height: 1.5;
+    }
+    .step-num {
+      background: var(--blue); color: var(--bg);
+      width: 16px; height: 16px; border-radius: 50%;
+      font-size: 9px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .guide-step strong { color: var(--tx); }
+    .guide-link { font-size: 10px; color: var(--blue); text-decoration: none; font-weight: 600; }
+    .guide-link:hover { text-decoration: underline; }
 
-    /* Connected user */
-    .bb-user { display:flex; align-items:center; gap:10px; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:10px 12px; }
-    .bb-avatar { width:30px; height:30px; border-radius:50%; background:var(--bd); flex-shrink:0; object-fit:cover; }
-    .bb-user-info { flex:1; }
-    .bb-user-info .name  { font-size:12px; font-weight:600; }
-    .bb-user-info .meth  { font-size:9px; color:var(--txm); margin-top:1px; }
-    .disconnect-btn { background:transparent; border:1px solid var(--red); border-radius:6px; color:var(--red); font-size:10px; padding:4px 9px; cursor:pointer; white-space:nowrap; }
-    .disconnect-btn:hover { background:rgba(248,113,113,.1); }
+    .scope-box {
+      background: var(--bg3); border-radius: var(--radius);
+      padding: 7px 10px; margin-left: 24px;
+      font-size: 10px; line-height: 1.8;
+    }
 
-    /* Favorites */
-    .fav-item { display:flex; align-items:center; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:6px 10px; gap:8px; }
-    .fav-item .fi-name { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; }
-    .fav-item .fi-del  { background:transparent; border:none; color:var(--txm); cursor:pointer; font-size:14px; padding:0; line-height:1; }
-    .fav-item .fi-del:hover { color:var(--red); }
-    .bb-select { flex:1; background:var(--s1); border:1px solid var(--bd); border-radius:var(--r); padding:7px 10px; font-family:var(--mono); font-size:11px; color:var(--tx); outline:none; }
-    .bb-select:focus { border-color:var(--acc); }
-    .small-btn { background:var(--s2); border:1px solid var(--bd); border-radius:var(--r); padding:7px 11px; color:var(--txd); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
-    .small-btn:hover { border-color:var(--acc); color:var(--acc2); }
+    /* Favs */
+    .fav-item {
+      display: flex; align-items: center;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 6px 10px; gap: 8px;
+    }
+    .fav-item .fi-name { font-family: var(--font-mono); font-size: 11px; color: var(--tx2); flex: 1; }
+    .fav-item .fi-del  { background: transparent; border: none; color: var(--tx3); cursor: pointer; font-size: 14px; line-height: 1; }
+    .fav-item .fi-del:hover { color: var(--red); }
 
-    /* History */
-    .hist-hdr { display:flex; align-items:center; justify-content:space-between; }
-    .hi { display:flex; align-items:center; background:var(--s1); border:1px solid var(--bd); border-radius:6px; padding:5px 9px; gap:8px; cursor:pointer; transition:border-color .12s; }
-    .hi:hover { border-color:var(--bd2); }
-    .hi .hi-name { font-family:var(--mono); font-size:10.5px; color:var(--txd); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .hi .hi-icon { font-size:11px; color:var(--txm); opacity:0; transition:opacity .12s; }
-    .hi:hover .hi-icon { opacity:1; }
-    .clear-btn { font-size:10px; color:var(--txm); background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; }
-    .clear-btn:hover { color:var(--red); }
+    /* ── History ──────────────────────────────────────────────────── */
+    .hist-hdr { display: flex; align-items: center; justify-content: space-between; }
+    .hi {
+      display: flex; align-items: center;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 6px 10px; gap: 8px;
+      cursor: pointer; transition: border-color var(--t);
+    }
+    .hi:hover { border-color: var(--border2); }
+    .hi .hi-name {
+      font-family: var(--font-mono); font-size: 10.5px;
+      color: var(--tx2); flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .hi .hi-icon { font-size: 11px; color: var(--tx3); opacity: 0; transition: opacity var(--t); }
+    .hi:hover .hi-icon { opacity: 1; }
 
-    /* Modal */
-    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:100; align-items:center; justify-content:center; }
-    .modal-overlay.show { display:flex; }
-    .modal { background:var(--s1); border:1px solid var(--bd2); border-radius:12px; width:390px; max-height:480px; display:flex; flex-direction:column; overflow:hidden; }
-    .modal-hdr { padding:14px 16px; border-bottom:1px solid var(--bd); }
-    .modal-hdr h3 { font-size:13px; font-weight:600; margin-bottom:5px; }
-    .modal-branch { font-family:var(--mono); font-size:10px; color:var(--acc2); background:rgba(124,106,247,.1); border-radius:5px; padding:3px 8px; word-break:break-all; display:inline-block; }
-    .modal-body { padding:12px 16px; flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; min-height:0; }
-    .modal-ftr  { padding:10px 16px; border-top:1px solid var(--bd); display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; background:var(--s1); }
-    .repo-list  { display:flex; flex-direction:column; gap:4px; }
-    .repo-item  { display:flex; align-items:center; gap:8px; background:var(--s2); border:1px solid var(--bd); border-radius:6px; padding:7px 10px; cursor:pointer; transition:border-color .12s; }
-    .repo-item:hover { border-color:var(--bd2); }
-    .repo-item.checked { border-color:var(--acc); background:rgba(124,106,247,.08); }
-    .repo-check { width:14px; height:14px; border-radius:3px; border:1px solid var(--bd2); display:flex; align-items:center; justify-content:center; font-size:9px; color:transparent; flex-shrink:0; }
-    .repo-item.checked .repo-check { background:var(--acc); border-color:var(--acc); color:#fff; }
-    .repo-name { font-family:var(--mono); font-size:11px; color:var(--txd); flex:1; }
-    .repo-item.checked .repo-name { color:var(--tx); }
-    .repo-ws   { font-size:9px; color:var(--txm); }
-    .result-item     { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; font-size:11px; }
-    .result-item.ok  { background:var(--gbg); color:var(--green); }
-    .result-item.err { background:rgba(248,113,113,.1); color:var(--red); }
-    .result-item .ri-repo { font-family:var(--mono); flex:1; }
-    .cancel-btn  { background:transparent; border:1px solid var(--bd); border-radius:var(--r); padding:7px 14px; color:var(--txm); font-size:12px; cursor:pointer; }
-    .cancel-btn:hover { border-color:var(--bd2); color:var(--tx); }
-    .confirm-btn { background:linear-gradient(135deg,#0052cc,#0066ff); border:none; border-radius:var(--r); padding:7px 16px; color:#fff; font-size:12px; font-weight:600; cursor:pointer; transition:opacity .15s; }
-    .confirm-btn:hover { opacity:.85; }
-    .confirm-btn:disabled { opacity:.4; cursor:not-allowed; }
+    .clear-link {
+      font-size: 10px; color: var(--tx3); background: none; border: none;
+      cursor: pointer; text-decoration: underline; padding: 0;
+    }
+    .clear-link:hover { color: var(--red); }
 
-    .spinner { display:inline-block; width:11px; height:11px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    /* ── Modal ────────────────────────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 100;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--bg1); border: 1px solid var(--border2);
+      border-radius: var(--radius-lg); width: 400px;
+      max-height: 520px; display: flex; flex-direction: column;
+      overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .modal-hdr {
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+    }
+    .modal-hdr h3 { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    .modal-branch {
+      font-family: var(--font-mono); font-size: 10px; color: var(--acc);
+      background: var(--acc-bg); border-radius: 4px;
+      padding: 3px 8px; display: inline-block; word-break: break-all;
+    }
+    .modal-body { padding: 12px 16px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .modal-ftr  {
+      padding: 10px 16px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; justify-content: flex-end;
+      background: var(--bg1);
+    }
+    .repo-list  { display: flex; flex-direction: column; gap: 4px; }
+    .repo-item  {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 10px;
+      cursor: pointer; transition: border-color var(--t);
+    }
+    .repo-item:hover { border-color: var(--border2); }
+    .repo-item.checked { border-color: var(--acc-bd); background: var(--acc-bg); }
+    .repo-check {
+      width: 14px; height: 14px; border-radius: 3px;
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: transparent; flex-shrink: 0;
+    }
+    .repo-item.checked .repo-check { background: var(--acc); border-color: var(--acc); color: var(--bg); }
+    .repo-name { font-family: var(--font-mono); font-size: 11px; color: var(--tx2); flex: 1; }
+    .repo-item.checked .repo-name { color: var(--tx); }
+    .repo-ws { font-size: 9px; color: var(--tx3); }
+    .result-item { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: var(--radius); font-size: 11px; }
+    .result-item.ok  { background: var(--green-bg); color: var(--green); }
+    .result-item.err { background: rgba(255,85,102,.1); color: var(--red); }
+    .result-item .ri-repo { font-family: var(--font-mono); flex: 1; }
 
-    .toast { position:fixed; bottom:10px; left:50%; transform:translateX(-50%) translateY(30px); background:var(--green); color:#071a0f; font-size:11px; font-weight:700; padding:5px 14px; border-radius:20px; opacity:0; transition:all .2s; pointer-events:none; white-space:nowrap; }
-    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-    .toast.error { background:var(--red); color:#fff; }
+    .cancel-btn {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 7px 14px;
+      color: var(--tx2); font-size: 12px; cursor: pointer;
+      transition: all var(--t);
+    }
+    .cancel-btn:hover { border-color: var(--border2); color: var(--tx); }
+    .confirm-btn {
+      background: var(--acc); color: var(--bg);
+      border: none; border-radius: var(--radius);
+      padding: 7px 16px; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: opacity var(--t);
+    }
+    .confirm-btn:hover { opacity: .85; }
+    .confirm-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Spinner ──────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block; width: 11px; height: 11px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 10px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--green); color: var(--bg);
+      font-size: 11px; font-weight: 600;
+      padding: 5px 14px; border-radius: 20px;
+      opacity: 0; transition: all .2s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.err  { background: var(--red); color: #fff; }
+
+    /* Platform label */
+    .plat-lbl {
+      font-size: 10px; font-weight: 600;
+      padding: 3px 0 2px; font-family: var(--font-mono);
+    }
   </style>
 </head>
 <body>
 
+<!-- ── Header ── -->
 <div class="hdr">
   <div class="logo">⎇</div>
-  <div><h1>Branch Generator</h1><p>Jira fields → git branch</p></div>
-  <div class="status"><div class="dot" id="dot"></div><span id="statusTxt">—</span></div>
+  <div class="hdr-title">
+    <h1>Branch Generator</h1>
+    <p>Jira → git branch</p>
+  </div>
+  <div class="hdr-actions">
+    <div class="status-pill">
+      <div class="dot" id="dot"></div>
+      <span id="statusTxt">—</span>
+    </div>
+    <button class="theme-btn" id="themeBtn" title="Toggle theme">🌙</button>
+  </div>
 </div>
 
+<!-- ── Tabs ── -->
 <div class="tabs">
   <div class="tab active" data-tab="main">Generate</div>
   <div class="tab" data-tab="template">Template</div>
   <div class="tab" data-tab="bitbucket" id="bbTab">Bitbucket</div>
+  <div class="tab" data-tab="github" id="ghTab">GitHub</div>
   <div class="tab" data-tab="history">History</div>
 </div>
 
-<!-- ══ Generate ══════════════════════════════════════════════════ -->
+<!-- ══ Generate ══════════════════════════════════════════════ -->
 <div class="page active" id="page-main">
+
   <div id="fieldsSection" style="display:none;flex-direction:column;gap:6px;">
     <div class="slbl">Detected Fields</div>
     <div class="fields-grid" id="fieldsGrid"></div>
@@ -276,11 +652,11 @@
 
   <div class="branch-wrap" id="branchWrap">
     <div class="slbl">Generated Branch</div>
-    <div class="branch-row">
+    <div style="display:flex;flex-direction:column;gap:4px;">
       <div class="branch-box" id="branchBox">
         <span class="branch-name" id="branchDisplay"></span>
         <div class="btn-group">
-          <button class="icon-btn create-btn" id="createBtn" title="Create on Bitbucket">⎇</button>
+          <button class="icon-btn create-btn" id="createBtn" title="Create on Bitbucket/GitHub">⎇</button>
           <button class="icon-btn" id="copyBtn" title="Copy">⎘</button>
         </div>
       </div>
@@ -294,7 +670,7 @@
         <div class="branch-box" id="baseBranchBox">
           <span class="branch-name" id="baseBranchDisplay"></span>
           <div class="btn-group">
-            <button class="icon-btn create-btn" id="baseCreateBtn" title="Create on Bitbucket">⎇</button>
+            <button class="icon-btn create-btn" id="baseCreateBtn" title="Create on Bitbucket/GitHub">⎇</button>
             <button class="icon-btn" id="baseCopyBtn" title="Copy">⎘</button>
           </div>
         </div>
@@ -311,17 +687,18 @@
     <div class="slbl">Manual Input</div>
     <div class="row">
       <input class="txt" type="text" id="manualInput" placeholder="[LH-48913] Planning: Implement Event Publisher…" />
-      <button class="gen-btn" id="genBtn">Go</button>
+      <button class="btn-primary" id="genBtn">Go</button>
     </div>
     <div class="hint">Also: <code>s200/LH-48141/LH-48913 Title</code></div>
   </div>
+
 </div>
 
-<!-- ══ Template ══════════════════════════════════════════════════ -->
+<!-- ══ Template ══════════════════════════════════════════════ -->
 <div class="page" id="page-template">
   <div style="display:flex;flex-direction:column;gap:10px;">
     <div>
-      <div class="slbl" style="margin-bottom:6px">Presets <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to use)</span></div>
+      <div class="slbl" style="margin-bottom:6px">Presets <span style="font-size:9px;color:var(--tx3);text-transform:none;letter-spacing:0;font-weight:400">(click to use)</span></div>
       <div class="preset-list" id="presetList"></div>
     </div>
     <div>
@@ -329,95 +706,89 @@
       <div class="add-preset-row">
         <input class="txt add-name" type="text" id="newPresetName" placeholder="Name" style="font-size:11px" />
         <input class="txt" type="text" id="newPresetTpl" placeholder="{sprint}/{parent}/{ticket}-{slug}" style="font-size:11px" />
-        <button class="small-btn" id="addPresetBtn">Add</button>
+        <button class="btn-secondary" id="addPresetBtn">Add</button>
       </div>
     </div>
     <div>
-      <div class="slbl" style="margin-bottom:5px">Variables <span style="font-size:9px;color:var(--txm);text-transform:none;letter-spacing:0;font-weight:400">(click to insert)</span></div>
+      <div class="slbl" style="margin-bottom:5px">Variables <span style="font-size:9px;color:var(--tx3);text-transform:none;letter-spacing:0;font-weight:400">(click to insert)</span></div>
       <div class="var-grid" id="varGrid"></div>
+      <div class="hint" style="margin-top:6px">Segments between <code>/</code> are dropped when variables are empty.</div>
     </div>
   </div>
 </div>
 
-<!-- ══ Bitbucket ═════════════════════════════════════════════════ -->
+<!-- ══ Bitbucket ══════════════════════════════════════════════ -->
 <div class="page" id="page-bitbucket">
-  <div class="bb-wrap">
+  <div class="service-wrap">
 
-    <!-- Connected user (shown when logged in) -->
     <div id="bbUserCard" style="display:none">
-      <div class="bb-user">
-        <img class="bb-avatar" id="bbAvatar" src="" alt="" />
-        <div class="bb-user-info">
+      <div class="user-card">
+        <img class="user-avatar" id="bbAvatar" src="" alt="" />
+        <div class="user-info">
           <div class="name" id="bbUserName">—</div>
-          <div class="meth" id="bbAuthMethod">—</div>
+          <div class="badge">🪣 Bitbucket · API Token</div>
         </div>
-        <button class="disconnect-btn" id="bbLogoutBtn">Disconnect</button>
+        <button class="btn-danger" id="bbLogoutBtn">Disconnect</button>
       </div>
     </div>
 
-    <!-- Auth options (shown when not logged in) -->
     <div id="bbAuthPanel">
-
-      <!-- API Token form - shown directly, no tabs -->
-      <div class="apppass-form">
-
-        <!-- Guide - always expanded -->
+      <div class="auth-form">
         <div class="guide-box">
-          <div class="guide-title">📖 Hướng dẫn lấy API Token</div>
-          <div class="guide-steps" style="margin-top:8px">
+          <div class="guide-title">📖 How to get a Bitbucket API Token</div>
+          <div class="guide-steps" style="margin-top:4px">
             <div class="guide-step">
               <span class="step-num">1</span>
-              <span>Vào <a href="https://bitbucket.org/account/settings/" target="_blank">bitbucket.org</a> → click <strong>avatar</strong> góc phải → <strong>Personal Bitbucket settings</strong><br/><em style="color:var(--red);font-size:10px">⚠️ Không phải "Account settings"</em></span>
+              <span>Go to <a href="https://bitbucket.org" target="_blank">bitbucket.org</a> → click avatar → <strong>Personal Bitbucket settings</strong><br/><em style="color:var(--red);font-size:9px">⚠️ Not "Account settings" — that goes to Atlassian</em></span>
             </div>
             <div class="guide-step">
               <span class="step-num">2</span>
-              <span><strong>Lấy email:</strong> Sidebar → <strong>Account settings</strong> → xem dòng <em style="color:var(--yellow)">"Your Atlassian account address is: ..."</em></span>
+              <span><strong>Find your email:</strong> Sidebar → <strong>Account settings</strong> → look for <em style="color:var(--yellow)">"Your Atlassian account address is:"</em></span>
             </div>
             <div class="guide-step">
               <span class="step-num">3</span>
-              <span><strong>Tạo token:</strong> Sidebar → <strong>API tokens</strong> → <strong>Create API token</strong></span>
+              <span>Sidebar → <strong>API tokens</strong> → <strong>Create API token</strong> → select scopes:</span>
+            </div>
+            <div class="scope-box">
+              <span style="color:var(--green)">✅ Repositories → Read</span><br/>
+              <span style="color:var(--green)">✅ Repositories → Write</span><br/>
+              <span style="color:var(--green)">✅ Workspace → Read</span><br/>
+              <div style="color:var(--tx3);font-size:9px;margin-top:5px;font-family:var(--font-mono);line-height:1.8">
+                read:repository:bitbucket<br/>
+                write:repository:bitbucket<br/>
+                read:workspace:bitbucket
+              </div>
             </div>
             <div class="guide-step">
               <span class="step-num">4</span>
-              <span>Tick scope → <strong>Create</strong> → copy token (chỉ hiện 1 lần)</span>
-            </div>
-            <div style="background:var(--s2);border-radius:6px;padding:7px 10px;margin-left:24px;font-size:10px;line-height:1.7">
-              <span style="color:var(--green)">✅ Repositories → Read</span><br/>
-              <span style="color:var(--green)">✅ Repositories → Write</span><br/>
-              <span style="color:var(--txm);font-style:italic">Không cần tick Account hay Workspace</span>
+              <span>Click <strong>Create</strong> → <strong>copy the token immediately</strong> (shown only once)</span>
             </div>
           </div>
-          <a class="guide-link" href="https://bitbucket.org/account/settings/api-tokens/new" target="_blank" style="display:block;margin-top:8px">
-            → Mở trang tạo API Token ↗
-          </a>
+          <a class="guide-link" href="https://bitbucket.org/account/settings/api-tokens/new" target="_blank">→ Open API Tokens page ↗</a>
         </div>
 
-        <label style="margin-top:8px">Atlassian Email</label>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600">Atlassian Email</label>
         <input class="txt" type="text" id="bbUsername" placeholder="you@company.com" style="font-size:11px" />
-        <div class="hint" style="margin-top:-2px">Email Atlassian — xem bước 2 ở trên</div>
 
-        <label style="margin-top:6px">API Token</label>
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;margin-top:2px">API Token</label>
         <input class="txt" type="password" id="bbAppPass" placeholder="ATCTT3xFf..." style="font-size:11px" />
-        <div class="hint" style="margin-top:-2px">Token chỉ hiện 1 lần khi tạo — copy và paste vào đây</div>
+        <div class="hint">Token is shown only once — copy it right after creating</div>
 
-        <button class="save-btn" id="bbSaveAppPass" style="margin-top:8px">🔗 Save & Connect</button>
+        <button class="btn-primary" id="bbSaveAppPass" style="margin-top:2px">🔗 Save & Connect</button>
       </div>
     </div>
 
-    <!-- Favorites (shown when logged in) -->
     <div id="bbFavsSection" style="display:none;flex-direction:column;gap:8px;">
       <div>
         <div class="slbl" style="margin-bottom:6px">Favorite Repos</div>
-        <div id="favList">
-          <div class="hint" style="padding:4px 0">No favorites yet.</div>
-        </div>
+        <div id="favList"><div class="hint" style="padding:4px 0">No favorites yet.</div></div>
       </div>
       <div>
         <div class="slbl" style="margin-bottom:6px">Add Favorite</div>
         <div style="display:flex;flex-direction:column;gap:5px">
-          <select class="bb-select" id="wsSelect" style="width:100%"><option value="">Workspace…</option></select>
-          <select class="bb-select" id="repoSelect" style="width:100%"><option value="">Repo…</option></select>
-          <button class="small-btn" id="addFavBtn" style="width:100%">★ Add to favorites</button>
+          <select class="sel" id="wsSelect"><option value="">Workspace…</option></select>
+          <select class="sel" id="repoSelect"><option value="">Repo…</option></select>
+          <button class="btn-secondary" id="addFavBtn" style="width:100%">★ Add to favorites</button>
         </div>
       </div>
     </div>
@@ -425,20 +796,94 @@
   </div>
 </div>
 
-<!-- ══ History ═══════════════════════════════════════════════════ -->
+<!-- ══ GitHub ═════════════════════════════════════════════════ -->
+<div class="page" id="page-github">
+  <div class="service-wrap">
+
+    <div id="ghUserCard" style="display:none">
+      <div class="user-card">
+        <img class="user-avatar" id="ghAvatar" src="" alt="" />
+        <div class="user-info">
+          <div class="name" id="ghUserName">—</div>
+          <div class="badge">🐙 GitHub · Personal Access Token</div>
+        </div>
+        <button class="btn-danger" id="ghLogoutBtn">Disconnect</button>
+      </div>
+    </div>
+
+    <div id="ghAuthPanel">
+      <div class="auth-form">
+        <div class="guide-box">
+          <div class="guide-title">📖 How to get a GitHub Personal Access Token</div>
+          <div class="guide-steps" style="margin-top:4px">
+            <div class="guide-step">
+              <span class="step-num">1</span>
+              <span>Go to <a href="https://github.com/settings/profile" target="_blank">github.com</a> → click your avatar (top right) → <strong>Settings</strong></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">2</span>
+              <span>Scroll down → <strong>Developer settings</strong> → <strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">3</span>
+              <span>Click <strong>Generate new token (classic)</strong> → set a name and expiry → select scope:</span>
+            </div>
+            <div class="scope-box">
+              <span style="color:var(--green)">✅ repo <em style="color:var(--tx3)">(Full control of private repositories)</em></span>
+            </div>
+            <div class="guide-step">
+              <span class="step-num">4</span>
+              <span>Click <strong>Generate token</strong> → <strong>copy immediately</strong> (shown only once)</span>
+            </div>
+          </div>
+          <a class="guide-link" href="https://github.com/settings/tokens/new" target="_blank">→ Open GitHub Token page ↗</a>
+        </div>
+
+        <label style="font-size:10px;color:var(--tx2);font-weight:600">GitHub Username</label>
+        <input class="txt" type="text" id="ghUsername" placeholder="your-github-username" style="font-size:11px" />
+        <div class="hint" style="margin-top:-2px">Optional — will be auto-detected from token</div>
+
+        <label style="font-size:10px;color:var(--tx2);font-weight:600;margin-top:4px">Personal Access Token</label>
+        <input class="txt" type="password" id="ghToken" placeholder="ghp_xxxxxxxxxxxx" style="font-size:11px" />
+        <div class="hint">Starts with <code>ghp_</code> — copy it right after creating, shown only once</div>
+
+        <button class="btn-primary" id="ghSaveBtn" style="margin-top:4px">🔗 Save & Connect</button>
+      </div>
+    </div>
+
+    <div id="ghFavsSection" style="display:none;flex-direction:column;gap:8px;">
+      <div>
+        <div class="slbl" style="margin-bottom:6px">Favorite Repos</div>
+        <div id="ghFavList"><div class="hint" style="padding:4px 0">No favorites yet.</div></div>
+      </div>
+      <div>
+        <div class="slbl" style="margin-bottom:6px">Add Favorite</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <select class="sel" id="ghOrgSelect"><option value="">Select account / org…</option></select>
+          <select class="sel" id="ghRepoSelect"><option value="">Select repo…</option></select>
+          <button class="btn-secondary" id="ghAddFavBtn" style="width:100%">★ Add to favorites</button>
+        </div>
+        <div class="hint" style="margin-top:5px">Or type manually: <input class="txt" type="text" id="ghRepoInput" placeholder="owner/repo" style="font-size:10px;padding:3px 7px;display:inline-block;width:auto;margin-left:4px" /></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ History ════════════════════════════════════════════════ -->
 <div class="page" id="page-history">
   <div class="hist-hdr">
     <div class="slbl" style="flex:1">Recent Branches</div>
-    <button class="clear-btn" id="clearBtn">clear all</button>
+    <button class="clear-link" id="clearBtn">clear all</button>
   </div>
   <div id="histList"><div class="hint" style="padding:8px 0">No history yet.</div></div>
 </div>
 
-<!-- ══ Modal ════════════════════════════════════════════════════ -->
+<!-- ══ Modal ══════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-hdr">
-      <h3>Create Branch on Bitbucket</h3>
+      <h3 id="modalTitle">Create Branch</h3>
       <span class="modal-branch" id="modalBranchName"></span>
     </div>
     <div class="modal-body" id="modalBody"></div>
@@ -453,6 +898,7 @@
 
 <script src="branchUtils.js"></script>
 <script src="bitbucket.js"></script>
+<script src="github.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

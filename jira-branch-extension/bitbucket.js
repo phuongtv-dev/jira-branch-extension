@@ -16,7 +16,7 @@ const bbGetUser          = ()      => bbSend('bb_get_user');
 const bbGetWorkspaces    = ()      => bbSend('bb_get_workspaces');
 const bbGetRepos         = ws      => bbSend('bb_get_repos', { workspace:ws });
 const bbIsLoggedIn       = ()      => bbSend('bb_is_logged_in');
-const bbCreateBranch     = (ws,r,b)=> bbSend('bb_create_branch', { workspace:ws, repo:r, branchName:b });
+const bbCreateBranch     = (ws,r,b,from)=> bbSend('bb_create_branch', { workspace:ws, repo:r, branchName:b, fromBranch:from||null });
 
 // ── Favorites ──────────────────────────────────────────────────────────────
 async function getFavorites() {
